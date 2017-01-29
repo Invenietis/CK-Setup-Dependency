@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>CK.SqlServer.Transform</id>
+    <version>$version$</version>
+    <authors>Invenietis</authors>
+    <owners>Invenietis</owners>
+    <copyright>Invenietis</copyright>
+    <projectUrl>https://bitbucket.org/olivier_spinelli/ck-sqlserver-parser</projectUrl>
+    <summary>T-Sql transformer.</summary>
+    <description>
+	T-Sql transformation based on CK.SqlServer.Parser.
+    </description>
+    <language>en-US</language>
+	  <dependencies>
+      <dependency id="CK.SqlServer.Parser" version="$version$" />
+    </dependencies>
+  </metadata>
+  <files>
+	  <file src="CK.SqlServer.Transform\bin\{{configuration}}\CK.SqlServer.Transform.dll" target="lib\net45" />		
+	  <file src="CK.SqlServer.Transform\bin\{{configuration}}\CK.SqlServer.Transform.pdb" target="lib\net45" />		
+	  <file src="CK.SqlServer.Transform\bin\{{configuration}}\CK.SqlServer.Transform.xml" target="lib\net45" />		
+  </files>
+</package>

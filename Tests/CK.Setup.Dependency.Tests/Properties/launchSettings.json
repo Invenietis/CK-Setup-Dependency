@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CK.Setup.Dependency.Tests": {
+      "commandName": "Project",
+      "commandLineArgs": "-gui"
+    }
+  }
+}
