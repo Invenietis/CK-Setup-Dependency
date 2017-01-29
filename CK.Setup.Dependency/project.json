@@ -6,7 +6,7 @@
   },
 
   "frameworks": {
-    "netstandard1.6": {
+    "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.1",
         "CK.ActivityMonitor.StandardSender": "6.0.0-a01"
