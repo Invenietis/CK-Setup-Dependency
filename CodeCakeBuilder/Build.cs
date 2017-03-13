@@ -105,13 +105,13 @@ namespace CodeCake
                 });
 
             Task("Clean")
-    .IsDependentOn("Check-Repository")
-    .Does(() =>
-    {
-        Cake.CleanDirectories(projects.Select(p => p.Path.GetDirectory().Combine("bin")));
-        Cake.CleanDirectories(releasesDir);
-        Cake.DeleteFiles("Tests/**/TestResult*.xml");
-    });
+                .IsDependentOn("Check-Repository")
+                .Does(() =>
+                {
+                    Cake.CleanDirectories(projects.Select(p => p.Path.GetDirectory().Combine("bin")));
+                    Cake.CleanDirectories(releasesDir);
+                    Cake.DeleteFiles("Tests/**/TestResult*.xml");
+                });
 
             Task("Restore-NuGet-Packages")
                 .IsDependentOn("Check-Repository")

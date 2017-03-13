@@ -28,7 +28,7 @@
     <RepositoryType>git</RepositoryType>
 
     <!-- Invenietis standard properties. -->
-    <Copyright>Copyright Invenietis 2014-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
+    <Copyright>Copyright Invenietis 2012-$([System.DateTime]::UtcNow.ToString("yyyy"))</Copyright>
     <Company>Invenietis</Company>
     <Authors>Invenietis</Authors>
 
