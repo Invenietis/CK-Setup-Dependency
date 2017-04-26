@@ -17,7 +17,7 @@ namespace CK.Setup.Dependency.Tests
             if (idxGui >= 0)
             {
                 var nunit = Path.Combine(TestHelper.SolutionFolder, "packages", "NUnit.Runners.Net4.2.6.4", "tools", "nunit.exe");
-                var toTest = Path.Combine(Directory.GetCurrentDirectory(), "bin", TestHelper.Configuration, "net451", "win7-x64", TestHelper.CurrentTestProjectName + ".exe");
+                var toTest = Path.Combine(Directory.GetCurrentDirectory(), "bin", TestHelper.Configuration, "net451", TestHelper.CurrentTestProjectName + ".exe");
                 var p = Process.Start(nunit, "\"" + toTest + "\" " + string.Join(" ", args));
                 return 0;
             }

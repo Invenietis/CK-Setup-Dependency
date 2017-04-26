@@ -77,7 +77,7 @@ namespace CodeCake
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
 
             // Configuration is either "Debug" or "Release".
-            string configuration = null;
+            string configuration = "Debug";
 
             Task("Check-Repository")
                 .Does(() =>
@@ -92,10 +92,11 @@ namespace CodeCake
                         else throw new Exception("Repository is not ready to be published.");
                     }
 
-                    configuration = gitInfo.IsValidRelease
-                                    && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc")
-                                    ? "Release"
-                                    : "Debug";
+                    if(gitInfo.IsValidRelease
+                                    && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc"))
+                    {
+                        configuration = "Release";
+                    }
 
                     Cake.Information("Publishing {0} projects with version={1} and configuration={2}: {3}",
                         projectsToPublish.Count(),
@@ -105,13 +106,13 @@ namespace CodeCake
                 });
 
             Task("Clean")
-    .IsDependentOn("Check-Repository")
-    .Does(() =>
-    {
-        Cake.CleanDirectories(projects.Select(p => p.Path.GetDirectory().Combine("bin")));
-        Cake.CleanDirectories(releasesDir);
-        Cake.DeleteFiles("Tests/**/TestResult*.xml");
-    });
+                .IsDependentOn("Check-Repository")
+                .Does(() =>
+                {
+                    Cake.CleanDirectories(projects.Select(p => p.Path.GetDirectory().Combine("bin")));
+                    Cake.CleanDirectories(releasesDir);
+                    Cake.DeleteFiles("Tests/**/TestResult*.xml");
+                });
 
             Task("Restore-NuGet-Packages")
                 .IsDependentOn("Check-Repository")
@@ -226,7 +227,7 @@ namespace CodeCake
                     }
                     if (Cake.AppVeyor().IsRunningOnAppVeyor)
                     {
-                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.SemVer);
+                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.NuGetVersion);
                     }
                 });
 

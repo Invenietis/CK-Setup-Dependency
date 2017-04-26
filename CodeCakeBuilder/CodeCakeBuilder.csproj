@@ -77,13 +77,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Bootstrap.ps1" />
-    <None Include="NuSpec\CK.SqlServer.Transform.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="NuSpec\CK.SqlServer.Parser.nuspec" />
-    <None Include="NuSpec\nuspec.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
     <None Include="RepositoryInfo.xsd">
       <SubType>Designer</SubType>
