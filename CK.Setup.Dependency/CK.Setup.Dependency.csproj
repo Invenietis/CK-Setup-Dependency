@@ -10,12 +10,11 @@
     </Description>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="7.0.0-a" />
+  <ItemGroup>
+    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="7.0.0-a" />
     <Reference Include="System" />
   </ItemGroup>
 
