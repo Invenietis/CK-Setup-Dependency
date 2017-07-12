@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -190,15 +190,15 @@ namespace CK.Setup
             }
             if( CycleDetected != null )
             {
-                monitor.Error().Send( "Cycle detected: {0}.", CycleExplainedString );
+                monitor.Error( $"Cycle detected: {CycleExplainedString}." );
             }
             if( HasStartFatal )
             {
-                monitor.Error().Send( "A fatal error has been raised during sort start." );
+                monitor.Error( "A fatal error has been raised during sort start." );
             }
             if( StartErrorCount > 0 )
             {
-                monitor.Error().Send( $"{StartErrorCount} error(s) have been raised during sort start." );
+                monitor.Error( $"{StartErrorCount} error(s) have been raised during sort start." );
             }
         }
 

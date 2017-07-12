@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace CK.Setup.Dependency.Tests
 {
-#if NET451
+#if NET461
     public static class Does
     {
         public static SubstringConstraint Contain(string expected) => Is.StringContaining(expected);
@@ -55,11 +55,11 @@ namespace CK.Setup.Dependency.Tests
                     if (value)
                     {
                         _monitor.Output.RegisterUniqueClient(c => c == _console, () => _console);
-                        _monitor.Info().Send("Enabled Logs to console.");
+                        _monitor.Info( "Enabled Logs to console.");
                     }
                     else
                     {
-                        _monitor.Info().Send("Disabled Logs to console.");
+                        _monitor.Info( "Disabled Logs to console.");
                         _monitor.Output.UnregisterClient(_console);
                     }
                 }
@@ -105,22 +105,22 @@ namespace CK.Setup.Dependency.Tests
 
         public static void Trace(IDependentItem i)
         {
-            using (_monitor.OpenTrace().Send("FullName = {0}", i.FullName))
+            using (_monitor.OpenTrace($"FullName = {i.FullName}"))
             {
-                _monitor.Trace().Send("Container = {0}", OneName(i.Container));
-                _monitor.Trace().Send("Generalization = {0}", OneName(i.Generalization));
-                _monitor.Trace().Send("Requires = {0}", Names(i.Requires));
-                _monitor.Trace().Send("RequiredBy = {0}", Names(i.RequiredBy));
-                _monitor.Trace().Send("Groups = {0}", Names(i.Groups));
+                _monitor.Trace( $"Container = {OneName( i.Container )}");
+                _monitor.Trace( $"Generalization = {OneName( i.Generalization )}" );
+                _monitor.Trace( $"Requires = {Names( i.Requires )}");
+                _monitor.Trace( $"RequiredBy = {Names( i.RequiredBy )}");
+                _monitor.Trace( $"Groups = {Names( i.Groups )}");
                 IDependentItemGroup g = i as IDependentItemGroup;
                 if (g != null)
                 {
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
                     if (c != null)
                     {
-                        _monitor.Trace().Send("[{0}]Children = {1}", c.ItemKind.ToString()[0], Names(g.Children));
+                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}");
                     }
-                    else _monitor.Trace().Send("[G]Children = {0}", Names(g.Children));
+                    else _monitor.Trace($"[G]Children = {Names( g.Children )}" );
                 }
             }
         }
@@ -146,15 +146,15 @@ namespace CK.Setup.Dependency.Tests
                     Trace(i);
         }
 
-        public static void Trace(ISortedItem i)
+        public static void Trace( ISortedItem i )
         {
-            using (_monitor.OpenTrace().Send("[{1}]FullName = {0}", i.FullName, i.ItemKind.ToString()[0]))
+            using( _monitor.OpenTrace( $"[{i.FullName}]FullName = {i.ItemKind.ToString()[0]}" ) )
             {
-                _monitor.Trace().Send("Container = {0}", i.Container != null ? i.Container.FullName : "(null)");
-                _monitor.Trace().Send("Generalization = {0}", i.Generalization != null ? i.Generalization.FullName : "(null)");
-                _monitor.Trace().Send("Requires = {0}", Names(i.Requires));
-                _monitor.Trace().Send("Groups = {0}", Names(i.Groups));
-                _monitor.Trace().Send("Children = {0}", Names(i.Children));
+                _monitor.Trace( $"Container = {(i.Container != null ? i.Container.FullName : "(null)")}" );
+                _monitor.Trace( $"(Generalization = {(i.Generalization != null ? i.Generalization.FullName : "(null)")}" );
+                _monitor.Trace( $"Requires = {Names( i.Requires )}" );
+                _monitor.Trace( $"Groups = {Names( i.Groups )}" );
+                _monitor.Trace( $"Children = {Names( i.Children )}" );
             }
         }
 
@@ -167,7 +167,7 @@ namespace CK.Setup.Dependency.Tests
 
         static void InitalizePaths()
         {
-#if NET451
+#if NET461
             string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
             p = Path.GetDirectoryName(p);
 #else

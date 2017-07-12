@@ -19,9 +19,9 @@ namespace CK.Setup
         /// <param name="monitor">Monitor to use.</param>
         public static void Trace( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor )
         {
-            using( monitor.OpenTrace().Send( "Dependent items (C - for container, G - for group and I - for item)" ) )
+            using( monitor.OpenTrace( "Dependent items (C - for container, G - for group and I - for item)" ) )
             {
-                foreach( var i in @this ) monitor.Trace().Send( i.ToStringDetails() );
+                foreach( var i in @this ) monitor.Trace( i.ToStringDetails() );
             }
         }
 
@@ -98,10 +98,10 @@ namespace CK.Setup
         /// <param name="monitor">Monitor to use.</param>
         public static void Trace( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor  )
         {
-            using( monitor.OpenTrace().Send( "Sorted items (C - for container, G - for group and I - for item)" ) )
+            using( monitor.OpenTrace( $"Sorted items (C - for container, G - for group and I - for item)" ) )
             {
                 foreach( var i in @this )
-                    if( i.HeadForGroup == null ) monitor.Trace().Send( i.ToStringDetails() );
+                    if( i.HeadForGroup == null ) monitor.Trace( i.ToStringDetails() );
             }
         }
 

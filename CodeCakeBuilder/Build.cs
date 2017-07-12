@@ -30,24 +30,6 @@ using Cake.Common.Tools.DotNetCore.Restore;
 
 namespace CodeCake
 {
-    public static class DotNetCoreRestoreSettingsExtension
-    {
-        public static T AddVersionArguments<T>(this T @this, SimpleRepositoryInfo info, Action<T> conf = null) where T : DotNetCoreSettings
-        {
-            if (info.IsValid)
-            {
-                var prev = @this.ArgumentCustomization;
-                @this.ArgumentCustomization = args => (prev?.Invoke(args) ?? args)
-                        .Append($@"/p:CakeBuild=""true""")
-                        .Append($@"/p:Version=""{info.NuGetVersion}""")
-                        .Append($@"/p:AssemblyVersion=""{info.MajorMinor}.0""")
-                        .Append($@"/p:FileVersion=""{info.FileVersion}""")
-                        .Append($@"/p:InformationalVersion=""{info.SemVer} ({info.NuGetVersion}) - SHA1: {info.CommitSha} - CommitDate: {info.CommitDateUtc.ToString("u")}""");
-            }
-            conf?.Invoke(@this);
-            return @this;
-        }
-    }
 
     /// <summary>
     /// Standard build "script".
@@ -89,7 +71,7 @@ namespace CodeCake
                         {
                             Cake.Warning("GitInfo is not valid, but you choose to continue...");
                         }
-                        else throw new Exception("Repository is not ready to be published.");
+                        else if(!Cake.AppVeyor().IsRunningOnAppVeyor) throw new Exception("Repository is not ready to be published.");
                     }
 
                     if(gitInfo.IsValidRelease
@@ -100,7 +82,7 @@ namespace CodeCake
 
                     Cake.Information("Publishing {0} projects with version={1} and configuration={2}: {3}",
                         projectsToPublish.Count(),
-                        gitInfo.SemVer,
+                        gitInfo.SafeSemVersion,
                         configuration,
                         projectsToPublish.Select(p => p.Name).Concatenate());
                 });
@@ -148,8 +130,8 @@ namespace CodeCake
                             new
                             {
                                 ProjectPath = p.Path.GetDirectory(),
-                                NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/netcoreapp1.0/" + p.Name + ".dll"),
-                                Net451Exe = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net451/" + p.Name + ".exe"),
+                                NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll"),
+                                Net451Exe = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net461/" + p.Name + ".exe"),
                             });
 
                     foreach (var test in testDlls)
@@ -160,7 +142,7 @@ namespace CodeCake
                             Cake.NUnit(test.Net451Exe.FullPath, new NUnitSettings()
                             {
                                 Framework = "v4.5",
-                                ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net451.xml")
+                                ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net461.xml")
                             });
                             Cake.Information("Testing: {0}", test.NetCoreAppDll);
                             Cake.DotNetCoreExecute(test.NetCoreAppDll);
@@ -227,7 +209,7 @@ namespace CodeCake
                     }
                     if (Cake.AppVeyor().IsRunningOnAppVeyor)
                     {
-                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.NuGetVersion);
+                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.SafeNuGetVersion);
                     }
                 });
 
