@@ -1,8 +1,9 @@
-{
+﻿{
   "profiles": {
     "CK.Setup.Dependency.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "-gui"
+      "commandName": "Executable",
+      "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
+      "commandLineArgs": "bin\\Debug\\net461\\CK.Setup.Dependency.Tests.exe"
     }
   }
 }

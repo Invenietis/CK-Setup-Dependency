@@ -1,4 +1,4 @@
-#region Proprietary License
+﻿#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setup.Dependency\Sorter\DependentItemIssue.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -146,58 +146,58 @@ namespace CK.Setup
             if( monitor == null ) throw new ArgumentNullException( "monitor" );
             if( StructureError != DependentItemStructureError.None )
             {
-                using( monitor.OpenInfo().Send( "Errors on '{0}'", Item.FullName ) )
+                using( monitor.OpenInfo( $"Errors on '{Item.FullName}'" ) )
                 {
                     if( (StructureError & DependentItemStructureError.MissingNamedContainer) != 0 )
                     {
-                        monitor.Error().Send( "Missing container named '{0}'", Item.Container.FullName );
+                        monitor.Error( $"Missing container named '{Item.Container.FullName}'" );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingItemIsNotAContainer) != 0 )
                     {
-                        monitor.Error().Send( "Items's container named '{0}' is not a container.", Item.Container.FullName );
+                        monitor.Error( $"Items's container named '{Item.Container.FullName}' is not a container." );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingContainerAskedToNotBeAContainer) != 0 )
                     {
-                        monitor.Error().Send( "Items's container '{0}' dynamically states that it is actually not a container. (Did you forget to configure the ItemKind of the object? This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.Container.FullName );
+                        monitor.Error( $"Items's container '{Item.Container.FullName}' dynamically states that it is actually not a container. (Did you forget to configure the ItemKind of the object? This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)" );
                     }
                     if( (StructureError & DependentItemStructureError.ContainerAskedToNotBeAGroupButContainsChildren) != 0 )
                     {
-                        monitor.Error().Send( "Potential container '{0}' dynamically states that it is actually not a Container nor a Group but contains Children. (Did you forget to configure the ItemKind of the object? When IDependentItemContainerTyped.ItemKind is SimpleItem, the Children enumeration must be null or empty. This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)", Item.FullName );
+                        monitor.Error( $"Potential container '{Item.FullName}' dynamically states that it is actually not a Container nor a Group but contains Children. (Did you forget to configure the ItemKind of the object? When IDependentItemContainerTyped.ItemKind is SimpleItem, the Children enumeration must be null or empty. This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)" );
                     }
                     if( (StructureError & DependentItemStructureError.MissingGeneralization) != 0 )
                     {
-                        monitor.Error().Send( "Item '{0}' requires '{1}' as its Generalization. The Generalization is missing.", Item.FullName, Item.Generalization.FullName );
+                        monitor.Error( $"Item '{Item.FullName}' requires '{Item.Generalization.FullName}' as its Generalization. The Generalization is missing." );
                     }
                     if( (StructureError & DependentItemStructureError.DeclaredGroupRefusedToBeAGroup) != 0 )
                     {
-                        monitor.Error().Send( "Item '{0}' declares Groups that states that they are actually not Groups (their ItemKind is SimpleItem): '{1}'.", Item.FullName, String.Join( "', '", _invalidGroups ) );
+                        monitor.Error( $"Item '{Item.FullName}' declares Groups that states that they are actually not Groups (their ItemKind is SimpleItem): '{String.Join( "', '", _invalidGroups )}'." );
                     }
                     if( (StructureError & DependentItemStructureError.MissingNamedGroup) != 0 )
                     {
-                        monitor.Error().Send( "Item '{0}' declares required Groups that are not registered: '{1}'. ", Item.FullName, String.Join( "', '", _missingGroups ) );
+                        monitor.Error( $"Item '{Item.FullName}' declares required Groups that are not registered: '{String.Join( "', '", _missingGroups )}'. " );
                     }
                     if( _homonyms != null )
                     {
-                        monitor.Error().Send( "Homonyms: {0} objects with the same full name.", _homonyms.Length );
+                        monitor.Error( $"Homonyms: {_homonyms.Length} objects with the same full name." );
                     }
                     if( _extraneousContainers != null )
                     {
                         if( Item.Container != null )
                         {
-                            monitor.Error().Send( "This item states to belong to container '{0}', but other containers ('{1}') claim to own it.", Item.Container.FullName, String.Join( "', '", _extraneousContainers ) );
+                            monitor.Error( $"This item states to belong to container '{Item.Container.FullName}', but other containers ('{String.Join( "', '", _extraneousContainers )}') claim to own it." );
                         }
                         else
                         {
-                            monitor.Error().Send( "More than one container claim to own the item: '{0}'.", String.Join( "', '", _extraneousContainers ) );
+                            monitor.Error( $"More than one container claim to own the item: '{String.Join( "', '", _extraneousContainers )}'." );
                         }
                     }
                     if( _missingChildren != null )
                     {
-                        monitor.Error().Send( "Missing children items: '{0}'.", String.Join( "', '", _missingChildren ) );
+                        monitor.Error( $"Missing children items: '{String.Join( "', '", _missingChildren )}'." );
                     }
                     if( _nbRequiredMissingDep > 0 )
                     {
-                        monitor.Error().Send( "Missing required dependencies: '{0}'.", String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) ) );
+                        monitor.Error( $"Missing required dependencies: '{String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) )}'." );
                     }
                 }
             }
