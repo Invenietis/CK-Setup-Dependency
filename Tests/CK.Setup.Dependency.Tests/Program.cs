@@ -1,15 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿#if !NET461
+using NUnit.Common;
+using NUnitLite;
+using System;
+using System.Reflection;
 
-namespace CK.Setup.Dependency.Tests
+namespace CK.Text.Tests
 {
-    public static class Program
+    public class Program
     {
-        public static int Main( string[] args)
+        public static int Main( string[] args )
         {
-            return StandardMain.StdMain(typeof(Program), args);
+            return new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
+                .Execute( args, new ExtendedTextWrapper( Console.Out ), Console.In );
         }
+
     }
 }
+#else
+namespace CK.Text.Tests
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            return 0;
+        }
+
+    }
+}
+#endif

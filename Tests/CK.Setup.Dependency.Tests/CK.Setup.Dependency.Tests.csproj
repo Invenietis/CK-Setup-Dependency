@@ -15,7 +15,6 @@
     <PackageReference Include="NUnit" Version="3.6.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="nunitlite" Version="3.6.0" />
-    <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">

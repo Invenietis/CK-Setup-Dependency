@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="8.0.0-p" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">

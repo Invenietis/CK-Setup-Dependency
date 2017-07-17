@@ -16,15 +16,15 @@ namespace CK.Setup.Dependency.Tests
 #if NET461
     public static class Does
     {
-        public static SubstringConstraint Contain(string expected) => Is.StringContaining(expected);
+        public static SubstringConstraint Contain( string expected ) => Is.StringContaining( expected );
 
-        public static EndsWithConstraint EndWith(string expected) => Is.StringEnding(expected);
+        public static EndsWithConstraint EndWith( string expected ) => Is.StringEnding( expected );
 
-        public static StartsWithConstraint StartWith(string expected) => Is.StringStarting(expected);
+        public static StartsWithConstraint StartWith( string expected ) => Is.StringStarting( expected );
 
         public static ConstraintExpression Not => Is.Not;
 
-        public static SubstringConstraint Contain(this ConstraintExpression @this, string expected) => @this.StringContaining(expected);
+        public static SubstringConstraint Contain( this ConstraintExpression @this, string expected ) => @this.StringContaining( expected );
     }
 #endif
 
@@ -47,20 +47,20 @@ namespace CK.Setup.Dependency.Tests
 
         public static bool LogsToConsole
         {
-            get { return _monitor.Output.Clients.Contains(_console); }
+            get { return _monitor.Output.Clients.Contains( _console ); }
             set
             {
-                if (value != LogsToConsole)
+                if( value != LogsToConsole )
                 {
-                    if (value)
+                    if( value )
                     {
-                        _monitor.Output.RegisterUniqueClient(c => c == _console, () => _console);
-                        _monitor.Info( "Enabled Logs to console.");
+                        _monitor.Output.RegisterUniqueClient( c => c == _console, () => _console );
+                        _monitor.Info( "Enabled Logs to console." );
                     }
                     else
                     {
-                        _monitor.Info( "Disabled Logs to console.");
-                        _monitor.Output.UnregisterClient(_console);
+                        _monitor.Info( "Disabled Logs to console." );
+                        _monitor.Output.UnregisterClient( _console );
                     }
                 }
             }
@@ -70,7 +70,7 @@ namespace CK.Setup.Dependency.Tests
         {
             get
             {
-                if (_solutionFolder == null) InitalizePaths();
+                if( _solutionFolder == null ) InitalizePaths();
                 return _solutionFolder;
             }
         }
@@ -79,58 +79,58 @@ namespace CK.Setup.Dependency.Tests
         {
             get
             {
-                if (_solutionFolder == null) InitalizePaths();
+                if( _solutionFolder == null ) InitalizePaths();
                 return _configuration;
             }
         }
 
         public static string CurrentTestProjectName => "CK.Setup.Dependency.Tests";
 
-        public static string BuildPathInCurrentTestProject(params string[] subNames)
+        public static string BuildPathInCurrentTestProject( params string[] subNames )
         {
             var all = new List<string>();
-            all.Add(SolutionFolder);
-            all.Add("Tests");
-            all.Add(CurrentTestProjectName);
-            all.AddRangeArray(subNames);
-            return Path.Combine(all.ToArray());
+            all.Add( SolutionFolder );
+            all.Add( "Tests" );
+            all.Add( CurrentTestProjectName );
+            all.AddRangeArray( subNames );
+            return Path.Combine( all.ToArray() );
         }
 
         #region Trace for IDependentItem
 
-        public static void Trace(IEnumerable<IDependentItem> e)
+        public static void Trace( IEnumerable<IDependentItem> e )
         {
-            foreach (var i in e) Trace(i);
+            foreach( var i in e ) Trace( i );
         }
 
-        public static void Trace(IDependentItem i)
+        public static void Trace( IDependentItem i )
         {
-            using (_monitor.OpenTrace($"FullName = {i.FullName}"))
+            using( _monitor.OpenTrace( $"FullName = {i.FullName}" ) )
             {
-                _monitor.Trace( $"Container = {OneName( i.Container )}");
+                _monitor.Trace( $"Container = {OneName( i.Container )}" );
                 _monitor.Trace( $"Generalization = {OneName( i.Generalization )}" );
-                _monitor.Trace( $"Requires = {Names( i.Requires )}");
-                _monitor.Trace( $"RequiredBy = {Names( i.RequiredBy )}");
-                _monitor.Trace( $"Groups = {Names( i.Groups )}");
+                _monitor.Trace( $"Requires = {Names( i.Requires )}" );
+                _monitor.Trace( $"RequiredBy = {Names( i.RequiredBy )}" );
+                _monitor.Trace( $"Groups = {Names( i.Groups )}" );
                 IDependentItemGroup g = i as IDependentItemGroup;
-                if (g != null)
+                if( g != null )
                 {
                     IDependentItemContainerTyped c = i as IDependentItemContainerTyped;
-                    if (c != null)
+                    if( c != null )
                     {
-                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}");
+                        _monitor.Trace( $"[{c.ItemKind.ToString()[0]}]Children = {Names( g.Children )}" );
                     }
-                    else _monitor.Trace($"[G]Children = {Names( g.Children )}" );
+                    else _monitor.Trace( $"[G]Children = {Names( g.Children )}" );
                 }
             }
         }
 
-        static string Names(IEnumerable<IDependentItemRef> ee)
+        static string Names( IEnumerable<IDependentItemRef> ee )
         {
-            return ee != null ? String.Join(", ", ee.Select(o => OneName(o))) : String.Empty;
+            return ee != null ? String.Join( ", ", ee.Select( o => OneName( o ) ) ) : String.Empty;
         }
 
-        static string OneName(IDependentItemRef o)
+        static string OneName( IDependentItemRef o )
         {
             return o != null ? o.FullName + " (" + o.GetType().Name + ")" : "(null)";
         }
@@ -139,11 +139,11 @@ namespace CK.Setup.Dependency.Tests
 
         #region Trace for ISortedItem
 
-        public static void Trace(IEnumerable<ISortedItem> e, bool skipGroupTail)
+        public static void Trace( IEnumerable<ISortedItem> e, bool skipGroupTail )
         {
-            foreach (var i in e)
-                if (i.HeadForGroup == null || skipGroupTail)
-                    Trace(i);
+            foreach( var i in e )
+                if( i.HeadForGroup == null || skipGroupTail )
+                    Trace( i );
         }
 
         public static void Trace( ISortedItem i )
@@ -158,34 +158,29 @@ namespace CK.Setup.Dependency.Tests
             }
         }
 
-        static string Names(IEnumerable<ISortedItem> ee)
+        static string Names( IEnumerable<ISortedItem> ee )
         {
-            return ee != null ? String.Join(", ", ee.Select(o => o.FullName)) : String.Empty;
+            return ee != null ? String.Join( ", ", ee.Select( o => o.FullName ) ) : String.Empty;
         }
         #endregion
 
 
         static void InitalizePaths()
         {
-#if NET461
-            string p = new Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
-            p = Path.GetDirectoryName(p);
-#else
-            string p = Directory.GetCurrentDirectory();
-#endif
 #if DEBUG
             _configuration = "Debug";
 #else
             _configuration = "Release";
 #endif
-            while (!Directory.EnumerateFiles(p).Where(f => f.EndsWith(".sln")).Any())
+            string p = AppContext.BaseDirectory;
+            while( !Directory.EnumerateFiles( p ).Where( f => f.EndsWith( ".sln" ) ).Any() )
             {
-                p = Path.GetDirectoryName(p);
+                p = Path.GetDirectoryName( p );
             }
             _solutionFolder = p;
 
-            Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
-            Console.WriteLine($"Core path: {typeof(string).GetTypeInfo().Assembly.CodeBase}.");
+            Console.WriteLine( $"SolutionFolder is: {_solutionFolder}." );
+            Console.WriteLine( $"Core path: {typeof( string ).GetTypeInfo().Assembly.CodeBase}." );
         }
 
     }
