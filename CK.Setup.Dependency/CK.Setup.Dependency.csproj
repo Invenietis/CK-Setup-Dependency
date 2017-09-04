@@ -3,19 +3,14 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net461</TargetFrameworks>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>
       Contains Dependent Items (with Containers and Groups) model and the ordering algorithm.
     </Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="8.0.1-Cdevelop-0002" />
   </ItemGroup>
 
   <ItemGroup>
