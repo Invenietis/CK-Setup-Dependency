@@ -690,10 +690,7 @@ namespace CK.Setup
                     Debug.Assert( eItem != null );
                     if( !(eItem is T) )
                     {
-                        throw new CKException( "Automatically discovered object '{2}' is of type '{0}' that does not implement '{1}'. When using DependencySorter<T>, all IDependentItem must be of type T.",
-                            eItem.GetType().AssemblyQualifiedName, 
-                            typeof( T ).Name,
-                            eItem.FullName );
+                        throw new Exception( $"Automatically discovered object '{eItem.FullName}' is of type '{eItem.GetType().AssemblyQualifiedName}' that does not implement '{typeof( T ).Name}'. When using DependencySorter<T>, all IDependentItem must be of type T." );
                     }
                     T e = (T)eItem;
                     Debug.Assert( alreadyRegisteredGroup == null || alreadyRegisteredChild == null, "Not coming from both sides at the same time." );

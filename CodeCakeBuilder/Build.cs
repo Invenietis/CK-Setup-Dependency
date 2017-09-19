@@ -1,4 +1,4 @@
-﻿using Cake.Common;
+using Cake.Common;
 using Cake.Common.Solution;
 using Cake.Common.IO;
 using Cake.Common.Tools.MSBuild;
@@ -96,24 +96,15 @@ namespace CodeCake
                      Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                  } );
 
-            Task( "Restore-NuGet-Packages" )
-                .IsDependentOn( "Check-Repository" )
-                .IsDependentOn( "Clean" )
-                .Does( () =>
-                 {
-                    // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                    Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
-                 } );
-
             Task( "Build" )
                 .IsDependentOn( "Check-Repository" )
                 .IsDependentOn( "Clean" )
-                .IsDependentOn( "Restore-NuGet-Packages" )
                 .Does( () =>
                  {
-                     foreach( var p in projects )
+                     using( var tempSln = Cake.CreateTemporarySolutionFile( solutionFileName ) )
                      {
-                         Cake.DotNetCoreBuild( p.Path.GetDirectory().FullPath,
+                         tempSln.ExcludeProjectsFromBuild( "CodeCakeBuilder" );
+                         Cake.DotNetCoreBuild( tempSln.FullPath.FullPath,
                              new DotNetCoreBuildSettings().AddVersionArguments( gitInfo, s =>
                              {
                                  s.Configuration = configuration;
@@ -130,7 +121,7 @@ namespace CodeCake
                                  new
                              {
                                  ProjectPath = p.Path.GetDirectory(),
-                                 NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll" ),
+                                 NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" ),
                                  Net461Exe = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/" + p.Name + ".exe" ),
                              } );
 
