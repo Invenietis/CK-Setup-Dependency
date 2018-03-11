@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -51,7 +51,7 @@ namespace CK.Setup
         /// <summary>
         /// Non null if a cycle has been detected.
         /// </summary>
-        public IReadOnlyList<ICycleExplainedElement> CycleDetected { get { return _cycle; } }
+        public IReadOnlyList<ICycleExplainedElement> CycleDetected => _cycle;
         
         /// <summary>
         /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null.

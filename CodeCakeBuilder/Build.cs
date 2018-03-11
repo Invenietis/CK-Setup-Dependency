@@ -87,7 +87,7 @@ namespace CodeCake
                 .IsDependentOn( "Build" )
                 .Does( () =>
                  {
-                     StandardUnitTests( configuration, projects.Where( p => p.Name.EndsWith( ".Tests" ) );
+                     StandardUnitTests( configuration, projects.Where( p => p.Name.EndsWith( ".Tests" ) ) );
                  } );
 
             Task( "Create-NuGet-Packages" )

@@ -86,7 +86,7 @@ namespace CK.Setup
             // This marker saves one iteration over specialized items to resolve Generalizations.
             internal static readonly Entry GeneralizationMissingMarker = new Entry( null, String.Empty );
 
-            // Reference to the entries of the 
+            // Reference to the entries (it is the dictionary that is used internally: it is shared between all sorted items).
             // This is unfortunately required only for ISortedItem.Requires to give ISortedItems instead of
             // poor IDependentItemRef. Mapping from a reference (FullName) to its Entry is done dynamically 
             // by a LINQ Select. The other way would be to compute the list of Entries for each ISortedItem.Requires
@@ -111,7 +111,6 @@ namespace CK.Setup
                 Rank = -1;
                 GroupIfHead = group;
             }
-            
 
             public bool Init( T e, DependentItemKind actualType, object startValue )
             {
@@ -312,9 +311,11 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires(); 
 
-            IEnumerable<ISortedItem> ISortedItem.Children => GetChildren(); 
+            IEnumerable<ISortedItem> ISortedItem.Children => GetChildren();
 
-            IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
+            IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() );
+
+            IEnumerable<ISortedItem> ISortedItem.AllRequires => GetAllRequires( new HashSet<Entry>() );
 
             #endregion
 
@@ -346,9 +347,11 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Groups => GetGroups(); 
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren(); 
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren();
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() );
+
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllRequires => GetAllRequires( new HashSet<Entry>() );
 
             #endregion
             IEnumerable<Entry> GetDirectRequires()
@@ -415,7 +418,23 @@ namespace CK.Setup
                 }
             }
 
-
+            IEnumerable<Entry> GetAllRequires( HashSet<Entry> dedup )
+            {
+                foreach( var i in GetRequires() )
+                {
+                    if( dedup.Add( i ) )
+                    {
+                        yield return i;
+                    }
+                    foreach( var ii in i.GetAllRequires( dedup ) )
+                    {
+                        if( dedup.Add( ii ) )
+                        {
+                            yield return ii;
+                        }
+                    }
+                }
+            }
         }
 
         class RankComputer
