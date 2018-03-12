@@ -315,8 +315,6 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() );
 
-            IEnumerable<ISortedItem> ISortedItem.AllRequires => GetAllRequires( new HashSet<Entry>() );
-
             #endregion
 
             #region ISortedItem<T> Members
@@ -350,8 +348,6 @@ namespace CK.Setup
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren();
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() );
-
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllRequires => GetAllRequires( new HashSet<Entry>() );
 
             #endregion
             IEnumerable<Entry> GetDirectRequires()
@@ -409,24 +405,6 @@ namespace CK.Setup
                         yield return i;
                     }
                     foreach( var ii in i.GetAllChildren( dedup ) )
-                    {
-                        if( dedup.Add( ii ) )
-                        {
-                            yield return ii;
-                        }
-                    }
-                }
-            }
-
-            IEnumerable<Entry> GetAllRequires( HashSet<Entry> dedup )
-            {
-                foreach( var i in GetRequires() )
-                {
-                    if( dedup.Add( i ) )
-                    {
-                        yield return i;
-                    }
-                    foreach( var ii in i.GetAllRequires( dedup ) )
                     {
                         if( dedup.Add( ii ) )
                         {

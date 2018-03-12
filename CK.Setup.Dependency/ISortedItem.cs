@@ -97,12 +97,6 @@ namespace CK.Setup
         IEnumerable<ISortedItem> DirectRequires { get; }
 
         /// <summary>
-        /// Gets all the <see cref="Requires"/> items recursively (as their <see cref="ISortedItem"/> wrapper).
-        /// this enumeration removes duplicates.
-        /// </summary>
-        IEnumerable<ISortedItem> AllRequires { get; }
-
-        /// <summary>
         /// Gets the groups (as their <see cref="ISortedItem"/> wrapper) to which this item belongs.
         /// Defaults to an empty enumerable.
         /// </summary>
