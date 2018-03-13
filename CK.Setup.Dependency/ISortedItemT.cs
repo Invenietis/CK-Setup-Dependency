@@ -5,6 +5,7 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
+using CK.Core;
 using System;
 using System.Collections.Generic;
 
@@ -65,6 +66,11 @@ namespace CK.Setup
         /// </summary>
         new IEnumerable<ISortedItem<T>> DirectRequires { get; }
 
+        /// <summary>
+        /// Creates a <see cref="ISet"/> with all the <see cref="Requires"/> items recursively
+        /// (as their <see cref="ISortedItem{T}"/> wrapper). This set, obviously, does not contain duplicates.
+        /// </summary>
+        new ICKReadOnlyCollection<ISortedItem<T>> GetAllRequires();
 
         /// <summary>
         /// Gets the groups (as their <see cref="ISortedItem{T}"/> wrapper) to which this item belongs.
@@ -80,13 +86,13 @@ namespace CK.Setup
         new IEnumerable<ISortedItem<T>> Children { get; }
 
         /// <summary>
-        /// Gets all the items recursively (as their <see cref="ISortedItem{T}"/> wrapper) that are contained in 
+        /// Creates a set with all the items recursively (as their <see cref="ISortedItem{T}"/> wrapper) that are contained in 
         /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
         /// Groups introduce a complexity here (a group contains items that belong to a container or other groups): this enumeration 
         /// removes duplicates and corretcly handles any cycles that may exist.
-        /// Empty otherwise.
+        /// Returns an empty set if no children at all exist.
         /// </summary>
-        new IEnumerable<ISortedItem<T>> AllChildren { get; }
+        new ICKReadOnlyCollection<ISortedItem<T>> GetAllChildren();
 
     }
 }

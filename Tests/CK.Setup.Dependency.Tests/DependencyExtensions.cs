@@ -37,6 +37,9 @@ namespace CK.Setup.Dependency.Tests
         public static void CheckChildren( this IDependencySorterResult @this, string fullName, string childrenFullNames )
         {
             Check( @this, Find( @this, fullName ).Children, childrenFullNames );
+            // AllChildren in the current tests are always the same as Children.
+            // If a new test (that should be done, btw), breaks this, this should be rewritten.
+            Check( @this, Find( @this, fullName ).GetAllChildren(), childrenFullNames );
         }
 
         public static void Check( this IDependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )

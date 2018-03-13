@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -189,6 +190,7 @@ namespace CK.Setup
             public HashSet<Entry> Groups { get; private set; }
 
             public Entry FirstChildIfContainer { get; private set; }
+
             public Entry NextChildInContainer { get; private set; }
 
             /// <summary>
@@ -279,6 +281,23 @@ namespace CK.Setup
                 return FullName;
             }
 
+            class SetAdapter<TKey> : ICKReadOnlyCollection<TKey>
+            {
+                readonly HashSet<TKey> _set;
+                public SetAdapter( HashSet<TKey> set )
+                {
+                    _set = set;
+                }
+
+                public int Count => _set.Count;
+
+                public bool Contains( object item ) => item is TKey i ? _set.Contains( i ) : false;
+
+                public IEnumerator<TKey> GetEnumerator() => _set.GetEnumerator();
+
+                IEnumerator IEnumerable.GetEnumerator() => _set.GetEnumerator();
+            }
+
             #region ISortedItem
 
             int ISortedItem.Index => Index; 
@@ -309,11 +328,13 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem> ISortedItem.Requires => GetRequires(); 
 
-            IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires(); 
+            IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires();
 
             IEnumerable<ISortedItem> ISortedItem.Children => GetChildren();
 
-            IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() );
+            ICKReadOnlyCollection<ISortedItem> ISortedItem.GetAllChildren() => new SetAdapter<ISortedItem<T>>( CollectAllChildren( new HashSet<ISortedItem<T>>() ) );
+
+            ICKReadOnlyCollection<ISortedItem> ISortedItem.GetAllRequires() => new SetAdapter<ISortedItem<T>>( CollectAllRequires( new HashSet<ISortedItem<T>>() ) );
 
             #endregion
 
@@ -324,9 +345,12 @@ namespace CK.Setup
             // By double checking the full name, we handle any "Optional"ity of the original Container reference.
             public ISortedItem<T> ConfiguredContainer 
             {
-                get { return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) 
+                get
+                {
+                    return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) 
                                 ? Container 
-                                : null; } 
+                                : null;
+                } 
             }
 
             ISortedItem<T> ISortedItem<T>.Generalization =>  Generalization == GeneralizationMissingMarker 
@@ -347,7 +371,9 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren();
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() );
+            ICKReadOnlyCollection<ISortedItem<T>> ISortedItem<T>.GetAllChildren() => new SetAdapter<ISortedItem<T>>( CollectAllChildren( new HashSet<ISortedItem<T>>() ) );
+
+            ICKReadOnlyCollection<ISortedItem<T>> ISortedItem<T>.GetAllRequires() => new SetAdapter<ISortedItem<T>>( CollectAllRequires( new HashSet<ISortedItem<T>>() ) );
 
             #endregion
             IEnumerable<Entry> GetDirectRequires()
@@ -396,22 +422,28 @@ namespace CK.Setup
                 }
             }
 
-            IEnumerable<Entry> GetAllChildren( HashSet<Entry> dedup )
+            HashSet<ISortedItem<T>> CollectAllChildren( HashSet<ISortedItem<T>> dedup )
             {
                 foreach( var i in GetChildren() )
                 {
                     if( dedup.Add( i ) )
                     {
-                        yield return i;
-                    }
-                    foreach( var ii in i.GetAllChildren( dedup ) )
-                    {
-                        if( dedup.Add( ii ) )
-                        {
-                            yield return ii;
-                        }
+                        i.CollectAllChildren( dedup );
                     }
                 }
+                return dedup;
+            }
+
+            HashSet<ISortedItem<T>> CollectAllRequires( HashSet<ISortedItem<T>> dedup )
+            {
+                foreach( var i in GetRequires() )
+                {
+                    if( dedup.Add( i ) )
+                    {
+                        i.CollectAllRequires( dedup );
+                    }
+                }
+                return dedup;
             }
         }
 
