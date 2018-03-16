@@ -31,7 +31,10 @@ namespace CK.Setup
         public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options = null )
         {
             var computer = new RankComputer( monitor, items, discoverers, options ?? _defaultOptions );
-            computer.Process();
+            if( !computer.FatalError && !computer.HasSevereStructureError )
+            {
+                computer.Process();
+            }
             return computer.GetResult();
         }
 
@@ -456,6 +459,7 @@ namespace CK.Setup
             readonly IActivityMonitor _monitor;
             List<CycleExplainedElement> _cycle;
             int _startErrorCount;
+            DependentItemStructureError _combinedStructureErrors;
             bool _fatalError;
 
             public RankComputer( IActivityMonitor m, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options )
@@ -485,7 +489,7 @@ namespace CK.Setup
                 }
                 // If structure error (like homonyms) exist, we may have skipped
                 // registration of some items.
-                Debug.Assert( _itemIssues.Count > 0 || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
+                Debug.Assert( !HasSevereStructureError || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
             class Registerer
@@ -1077,6 +1081,7 @@ namespace CK.Setup
                 DependentItemIssue issues = _itemIssues.Where( m => m.Item == nc.Item ).FirstOrDefault();
                 if( issues == null ) _itemIssues.Add( (issues = new DependentItemIssue( nc.Item, status )) );
                 else issues.StructureError |= status;
+                _combinedStructureErrors |= status;
                 return issues;
             }
 
@@ -1084,10 +1089,17 @@ namespace CK.Setup
 
             public bool FatalError => _fatalError;
 
+            /// <summary>
+            /// Gets whether initial registration detected issues that makes the topological sort useless.
+            /// Currently only homonyms stops the process.
+            /// </summary>
+            public bool HasSevereStructureError => (_combinedStructureErrors & DependentItemStructureError.Homonym) != 0;
+
             #region Processing: Rank computing & Cycle detection.
 
             public void Process()
             {
+                Debug.Assert( HasSevereStructureError == false );
                 if( _options.HookInput != null ) _options.HookInput( _entries.Where( e => e.Key is String ).Select( e => (Entry)e.Value ).Where( e => e.HeadIfGroupOrContainer == null ).Select( e => e.Item ) );
                 // Note: Since we can NOT support dynamic resolution of a missing dependency
                 // (through a function like ResolveMissing( fullName ) because of
@@ -1351,15 +1363,15 @@ namespace CK.Setup
 
             public DependencySorterResult<T> GetResult()
             {
-                if( _cycle == null )
+                if( _cycle == null && !_fatalError && !HasSevereStructureError )
                 {
                     _result.Sort( _comparer );
                     int i = 0;
                     foreach( var e in _result ) e.Index = i++;
                     if( _options.HookOutput != null ) _options.HookOutput( _result );
-                    return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError );
+                    return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError, false );
                 }
-                return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError );
+                return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError, HasSevereStructureError );
             }
 
             static int NormalComparer( Entry o1, Entry o2 )
