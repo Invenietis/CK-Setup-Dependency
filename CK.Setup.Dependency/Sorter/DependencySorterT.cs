@@ -381,7 +381,6 @@ namespace CK.Setup
                 return RemoveMissing( Item.Requires );
             }
 
-
             IEnumerable<Entry> GetRequires()
             {
                 return RemoveMissing( HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires );
@@ -484,7 +483,9 @@ namespace CK.Setup
                     }
                     r.FinalizeRegister();
                 }
-                Debug.Assert( _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
+                // If structure error (like homonyms) exist, we may have skipped
+                // registration of some items.
+                Debug.Assert( _itemIssues.Count > 0 || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
             class Registerer
@@ -1068,6 +1069,9 @@ namespace CK.Setup
                 }            
             }
 
+            /// <summary>
+            /// This is only called by Registerer (from the RankComputer() constructor).
+            /// </summary>
             DependentItemIssue SetStructureError( Entry nc, DependentItemStructureError status )
             {
                 DependentItemIssue issues = _itemIssues.Where( m => m.Item == nc.Item ).FirstOrDefault();
