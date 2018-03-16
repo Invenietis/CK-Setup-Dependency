@@ -489,7 +489,7 @@ namespace CK.Setup
                 }
                 // If structure error (like homonyms) exist, we may have skipped
                 // registration of some items.
-                Debug.Assert( !HasSevereStructureError || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
+                Debug.Assert( HasSevereStructureError || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
             class Registerer
