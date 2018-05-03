@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -28,15 +28,17 @@ namespace CK.Setup
             List<CycleExplainedElement> cycle, 
             List<DependentItemIssue> itemIssues,
             int startErrorCount,
-            bool hasStartFatal )
+            bool hasStartFatal,
+            bool hasSevereStructureError )
         {
-            Debug.Assert( (result == null) != (cycle == null), "cycle ^ result" );
+            Debug.Assert( (result != null) == (cycle == null && !hasStartFatal && !hasSevereStructureError) );
             HasStartFatal = hasStartFatal;
             StartErrorCount = startErrorCount;
+            HasSevereStructureError = hasSevereStructureError;
             if( result == null )
             {
                 SortedItems = null;
-                _cycle = cycle.ToArray();
+                _cycle = cycle?.ToArray();
             }
             else
             {
@@ -51,10 +53,11 @@ namespace CK.Setup
         /// <summary>
         /// Non null if a cycle has been detected.
         /// </summary>
-        public IReadOnlyList<ICycleExplainedElement> CycleDetected { get { return _cycle; } }
+        public IReadOnlyList<ICycleExplainedElement> CycleDetected => _cycle;
         
         /// <summary>
-        /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null.
+        /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null
+        /// or <see cref="HasStartFatal"/> or <see cref="HasSevereStructureError"/> are true.
         /// </summary>
         public readonly IReadOnlyList<ISortedItem<T>> SortedItems;
 
@@ -76,6 +79,12 @@ namespace CK.Setup
         /// fatal.
         /// </summary>
         public bool HasStartFatal { get; }
+
+        /// <summary>
+        /// Gets whether a structure error prevented the graph to be processed.
+        /// The <see cref="ItemIssues"/> contains the details of the error.
+        /// </summary>
+        public bool HasSevereStructureError { get; }
 
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
@@ -156,10 +165,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
         /// </summary>
-        public string CycleExplainedString
-        {
-            get { return CycleDetected != null ? String.Join( " ", CycleDetected ) : null; }
-        }
+        public string CycleExplainedString => CycleDetected != null ? String.Join( " ", CycleDetected ) : null; 
 
         /// <summary>
         /// Gets a description of the required missing dependencies. 
@@ -200,36 +206,6 @@ namespace CK.Setup
             {
                 monitor.Error( $"{StartErrorCount} error(s) have been raised during sort start." );
             }
-        }
-
-        private static bool IsGeneralizedBy( ISortedItem from, ISortedItem to )
-        {
-            return from.Generalization == to;
-        }
-
-        private static bool IsRequires( ISortedItem from, ISortedItem to )
-        {
-            // We want to know here if the Requires relation is defined at the DependentItem level.
-            // If we challenge the from.Requires (HashSet of IDependentItemRef which can not be used efficiently here), 
-            // we'll be able to say that from requires to or to is required by from.
-            // It is simpler and quite as efficient to challenge the original list.
-            return from.Item.Requires != null && from.Item.Requires.Where( r => r != null && !r.Optional ).Any( r => r == to.Item || r.FullName == to.FullName );
-        }
-
-        private static bool IsRequiredBy( ISortedItem from, ISortedItem to )
-        {
-            // See comment above.
-            return to.Item.RequiredBy != null && to.Item.RequiredBy.Any( r => r != null && (r == from.Item || r.FullName == from.FullName) );
-        }
-
-        private static bool IsContainerContains( ISortedItem from, ISortedItem to )
-        {
-            return from.Container == to;
-        }
-
-        private static bool IsElementOfContainer( ISortedItem from, ISortedItem to )
-        {
-            return to.Container == from;
         }
 
     }

@@ -113,6 +113,22 @@ namespace CK.Setup.Dependency.Tests
             }
         }
 
+        [Test]
+        public void MultipleStructureErrors_with_homonym_prevents_the_graph_ordering()
+        {
+            var childOfCB2 = new TestableItem( "ChildOfCB2" );
+            var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
+            var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
+            var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
+            // This "discovers" an homonym.
+            cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB1, cB2, cB3 );
+            Assert.That( r.IsComplete, Is.False );
+            Assert.That( r.HasSevereStructureError, Is.True );
+            Assert.That( r.SortedItems, Is.Null );
+            Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
+            Assert.That( r.ItemIssues.SelectMany( i => i.Homonyms ).Count(), Is.EqualTo( 1 ) );
+        }
 
         [Test]
         public void MultipleStructureErrors()
@@ -121,8 +137,6 @@ namespace CK.Setup.Dependency.Tests
             var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
             var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
             var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
-            // This "discovers" an homonym.
-            cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
             {
                 var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB1, cB2, cB3 );
                 Assert.That( r.IsComplete, Is.False );
@@ -131,9 +145,8 @@ namespace CK.Setup.Dependency.Tests
                 Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
                 
                 var issue1 = r.ItemIssues.Single( i => i.Item == cB1 );
-                Assert.That( issue1.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild | DependentItemStructureError.Homonym ) );
+                Assert.That( issue1.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
                 Assert.That( issue1.MissingChildren.Single(), Is.EqualTo( "MissingChild" ) );
-                Assert.That( issue1.Homonyms.Single().FullName, Is.EqualTo( "CB1" ) );
                 
                 var issue2 = r.ItemIssues.Single( i => i.Item == cB2 );
                 Assert.That( issue2.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild | DependentItemStructureError.MissingNamedContainer | DependentItemStructureError.MissingDependency ) );

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CK.Core;
 
@@ -15,7 +15,8 @@ namespace CK.Setup
         IReadOnlyList<ICycleExplainedElement> CycleDetected { get; }
 
         /// <summary>
-        /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null.
+        /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null
+        /// or <see cref="HasStartFatal"/> or <see cref="HasSevereStructureError"/> are true.
         /// </summary>
         IReadOnlyList<ISortedItem> SortedItems { get; }
 
@@ -30,6 +31,12 @@ namespace CK.Setup
         /// List of <see cref="DependentItemIssue"/>. Never null.
         /// </summary>
         IReadOnlyList<DependentItemIssue> ItemIssues { get; }
+
+        /// <summary>
+        /// Gets whether a structure error prevented the graph to be processed.
+        /// The <see cref="ItemIssues"/> contains the details of the error.
+        /// </summary>
+        bool HasSevereStructureError { get; }
 
         /// <summary>
         /// True if at least one non-optional requirement or generalization (a requirement that is not prefixed with '?' when expressed as a string) exists.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Collections;
 
 namespace CK.Setup
 {
@@ -30,7 +31,10 @@ namespace CK.Setup
         public static DependencySorterResult<T> OrderItems( IActivityMonitor monitor, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options = null )
         {
             var computer = new RankComputer( monitor, items, discoverers, options ?? _defaultOptions );
-            computer.Process();
+            if( !computer.FatalError && !computer.HasSevereStructureError )
+            {
+                computer.Process();
+            }
             return computer.GetResult();
         }
 
@@ -86,7 +90,7 @@ namespace CK.Setup
             // This marker saves one iteration over specialized items to resolve Generalizations.
             internal static readonly Entry GeneralizationMissingMarker = new Entry( null, String.Empty );
 
-            // Reference to the entries of the 
+            // Reference to the entries (it is the dictionary that is used internally: it is shared between all sorted items).
             // This is unfortunately required only for ISortedItem.Requires to give ISortedItems instead of
             // poor IDependentItemRef. Mapping from a reference (FullName) to its Entry is done dynamically 
             // by a LINQ Select. The other way would be to compute the list of Entries for each ISortedItem.Requires
@@ -111,7 +115,6 @@ namespace CK.Setup
                 Rank = -1;
                 GroupIfHead = group;
             }
-            
 
             public bool Init( T e, DependentItemKind actualType, object startValue )
             {
@@ -190,6 +193,7 @@ namespace CK.Setup
             public HashSet<Entry> Groups { get; private set; }
 
             public Entry FirstChildIfContainer { get; private set; }
+
             public Entry NextChildInContainer { get; private set; }
 
             /// <summary>
@@ -280,6 +284,23 @@ namespace CK.Setup
                 return FullName;
             }
 
+            class SetAdapter<TKey> : ICKReadOnlyCollection<TKey>
+            {
+                readonly HashSet<TKey> _set;
+                public SetAdapter( HashSet<TKey> set )
+                {
+                    _set = set;
+                }
+
+                public int Count => _set.Count;
+
+                public bool Contains( object item ) => item is TKey i ? _set.Contains( i ) : false;
+
+                public IEnumerator<TKey> GetEnumerator() => _set.GetEnumerator();
+
+                IEnumerator IEnumerable.GetEnumerator() => _set.GetEnumerator();
+            }
+
             #region ISortedItem
 
             int ISortedItem.Index => Index; 
@@ -310,11 +331,13 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem> ISortedItem.Requires => GetRequires(); 
 
-            IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires(); 
+            IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires();
 
-            IEnumerable<ISortedItem> ISortedItem.Children => GetChildren(); 
+            IEnumerable<ISortedItem> ISortedItem.Children => GetChildren();
 
-            IEnumerable<ISortedItem> ISortedItem.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
+            ICKReadOnlyCollection<ISortedItem> ISortedItem.GetAllChildren() => new SetAdapter<ISortedItem<T>>( CollectAllChildren( new HashSet<ISortedItem<T>>() ) );
+
+            ICKReadOnlyCollection<ISortedItem> ISortedItem.GetAllRequires() => new SetAdapter<ISortedItem<T>>( CollectAllRequires( new HashSet<ISortedItem<T>>() ) );
 
             #endregion
 
@@ -325,9 +348,12 @@ namespace CK.Setup
             // By double checking the full name, we handle any "Optional"ity of the original Container reference.
             public ISortedItem<T> ConfiguredContainer 
             {
-                get { return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) 
+                get
+                {
+                    return Item.Container != null && ReferenceEquals( Item.Container.FullName, Container.FullName ) 
                                 ? Container 
-                                : null; } 
+                                : null;
+                } 
             }
 
             ISortedItem<T> ISortedItem<T>.Generalization =>  Generalization == GeneralizationMissingMarker 
@@ -346,16 +372,17 @@ namespace CK.Setup
 
             IEnumerable<ISortedItem<T>> ISortedItem<T>.Groups => GetGroups(); 
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren(); 
+            IEnumerable<ISortedItem<T>> ISortedItem<T>.Children => GetChildren();
 
-            IEnumerable<ISortedItem<T>> ISortedItem<T>.AllChildren => GetAllChildren( new HashSet<Entry>() ); 
+            ICKReadOnlyCollection<ISortedItem<T>> ISortedItem<T>.GetAllChildren() => new SetAdapter<ISortedItem<T>>( CollectAllChildren( new HashSet<ISortedItem<T>>() ) );
+
+            ICKReadOnlyCollection<ISortedItem<T>> ISortedItem<T>.GetAllRequires() => new SetAdapter<ISortedItem<T>>( CollectAllRequires( new HashSet<ISortedItem<T>>() ) );
 
             #endregion
             IEnumerable<Entry> GetDirectRequires()
             {
                 return RemoveMissing( Item.Requires );
             }
-
 
             IEnumerable<Entry> GetRequires()
             {
@@ -397,25 +424,29 @@ namespace CK.Setup
                 }
             }
 
-            IEnumerable<Entry> GetAllChildren( HashSet<Entry> dedup )
+            HashSet<ISortedItem<T>> CollectAllChildren( HashSet<ISortedItem<T>> dedup )
             {
                 foreach( var i in GetChildren() )
                 {
                     if( dedup.Add( i ) )
                     {
-                        yield return i;
-                    }
-                    foreach( var ii in i.GetAllChildren( dedup ) )
-                    {
-                        if( dedup.Add( ii ) )
-                        {
-                            yield return ii;
-                        }
+                        i.CollectAllChildren( dedup );
                     }
                 }
+                return dedup;
             }
 
-
+            HashSet<ISortedItem<T>> CollectAllRequires( HashSet<ISortedItem<T>> dedup )
+            {
+                foreach( var i in GetRequires() )
+                {
+                    if( dedup.Add( i ) )
+                    {
+                        i.CollectAllRequires( dedup );
+                    }
+                }
+                return dedup;
+            }
         }
 
         class RankComputer
@@ -428,6 +459,7 @@ namespace CK.Setup
             readonly IActivityMonitor _monitor;
             List<CycleExplainedElement> _cycle;
             int _startErrorCount;
+            DependentItemStructureError _combinedStructureErrors;
             bool _fatalError;
 
             public RankComputer( IActivityMonitor m, IEnumerable<T> items, IEnumerable<IDependentItemDiscoverer<T>> discoverers, DependencySorterOptions options )
@@ -455,7 +487,9 @@ namespace CK.Setup
                     }
                     r.FinalizeRegister();
                 }
-                Debug.Assert( _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
+                // If structure error (like homonyms) exist, we may have skipped
+                // registration of some items.
+                Debug.Assert( HasSevereStructureError || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
             }
 
             class Registerer
@@ -1039,11 +1073,15 @@ namespace CK.Setup
                 }            
             }
 
+            /// <summary>
+            /// This is only called by Registerer (from the RankComputer() constructor).
+            /// </summary>
             DependentItemIssue SetStructureError( Entry nc, DependentItemStructureError status )
             {
                 DependentItemIssue issues = _itemIssues.Where( m => m.Item == nc.Item ).FirstOrDefault();
                 if( issues == null ) _itemIssues.Add( (issues = new DependentItemIssue( nc.Item, status )) );
                 else issues.StructureError |= status;
+                _combinedStructureErrors |= status;
                 return issues;
             }
 
@@ -1051,10 +1089,17 @@ namespace CK.Setup
 
             public bool FatalError => _fatalError;
 
+            /// <summary>
+            /// Gets whether initial registration detected issues that makes the topological sort useless.
+            /// Currently only homonyms stops the process.
+            /// </summary>
+            public bool HasSevereStructureError => (_combinedStructureErrors & DependentItemStructureError.Homonym) != 0;
+
             #region Processing: Rank computing & Cycle detection.
 
             public void Process()
             {
+                Debug.Assert( HasSevereStructureError == false );
                 if( _options.HookInput != null ) _options.HookInput( _entries.Where( e => e.Key is String ).Select( e => (Entry)e.Value ).Where( e => e.HeadIfGroupOrContainer == null ).Select( e => e.Item ) );
                 // Note: Since we can NOT support dynamic resolution of a missing dependency
                 // (through a function like ResolveMissing( fullName ) because of
@@ -1318,15 +1363,15 @@ namespace CK.Setup
 
             public DependencySorterResult<T> GetResult()
             {
-                if( _cycle == null )
+                if( _cycle == null && !_fatalError && !HasSevereStructureError )
                 {
                     _result.Sort( _comparer );
                     int i = 0;
                     foreach( var e in _result ) e.Index = i++;
                     if( _options.HookOutput != null ) _options.HookOutput( _result );
-                    return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError );
+                    return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError, false );
                 }
-                return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError );
+                return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError, HasSevereStructureError );
             }
 
             static int NormalComparer( Entry o1, Entry o2 )
