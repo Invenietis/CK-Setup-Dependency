@@ -5,6 +5,6 @@
     <Description>Contains Dependent Items (with Containers and Groups) model and the ordering algorithm.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="0.0.0--0240gf8-local" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="11.0.1--0006-develop" />
   </ItemGroup>
 </Project>
