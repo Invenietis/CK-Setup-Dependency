@@ -1,33 +1,12 @@
-﻿using System.IO;
-using NUnit.Framework;
+using System.IO;
 using CK.Core;
 using System;
 using System.Linq;
-using System.Diagnostics;
-using System.Xml.Linq;
-using System.Text.RegularExpressions;
-using CK.Text;
 using System.Reflection;
-using NUnit.Framework.Constraints;
 using System.Collections.Generic;
 
 namespace CK.Setup.Dependency.Tests
 {
-#if NET461
-    public static class Does
-    {
-        public static SubstringConstraint Contain( string expected ) => Is.StringContaining( expected );
-
-        public static EndsWithConstraint EndWith( string expected ) => Is.StringEnding( expected );
-
-        public static StartsWithConstraint StartWith( string expected ) => Is.StringStarting( expected );
-
-        public static ConstraintExpression Not => Is.Not;
-
-        public static SubstringConstraint Contain( this ConstraintExpression @this, string expected ) => @this.StringContaining( expected );
-    }
-#endif
-
     public static class TestHelper
     {
         static string _solutionFolder;
