@@ -78,12 +78,12 @@ namespace CK.Setup.Dependency.Tests
             var pAModel = new TestableContainer( "Model.A" );
 
             Action test = () =>
-                { 
+                {
                     var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pAModel, pA );
                     ResultChecker.SimpleCheck( r );
                     var rRevert = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, pAModel, pA );
                     ResultChecker.SimpleCheck( rRevert );
-            
+
                     r.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
                     rRevert.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
                 };
@@ -103,14 +103,14 @@ namespace CK.Setup.Dependency.Tests
             var pAModel = new TestableContainer( "Model.A" );
             var pB = new TestableContainer( "B" );
             var pBModel = new TestableContainer( "Model.B" );
-            
+
             Action testAndRestore = () =>
-                { 
+                {
                     var r1 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, pAModel, pA, pBModel, pB );
                     ResultChecker.SimpleCheck( r1 );
                     var r2 = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, pAModel, pA, pBModel, pB );
                     ResultChecker.SimpleCheck( r2 );
-            
+
                     // There is no constraint between A and Model.B: depending on the sort order this changes.
                     r1.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "B" );
                     r2.AssertOrdered( "Model.A.Head", "Model.A", "Model.B.Head", "A.Head", "Model.B", "A", "B.Head", "B" );
@@ -147,7 +147,7 @@ namespace CK.Setup.Dependency.Tests
             var pB = new TestableContainer( "B" );
             var pBModel = new TestableContainer( "Model.B" );
             var pBObjects = new TestableContainer( "Objects.B" );
-            var all = new[]{ pA, pAModel, pAObjects, pB, pBModel, pBObjects };
+            var all = new[] { pA, pAModel, pAObjects, pB, pBModel, pBObjects };
 
             Action testAndRestore = () =>
             {
@@ -370,7 +370,7 @@ namespace CK.Setup.Dependency.Tests
             }
             {
                 // Ordering handles duplicates.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new IDependentItem[]{ c, c } );
+                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new IDependentItem[] { c, c } );
                 Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
                 new ResultChecker( r ).CheckRecurse( "Root" );
                 ResultChecker.SimpleCheck( r );
@@ -404,6 +404,59 @@ namespace CK.Setup.Dependency.Tests
             r.AssertOrdered( "PackageForAB.Head", "A", "B", "PackageForAB", "PackageForABLevel1.Head", "ObjectBLevel1", "PackageForABLevel1" );
             r.CheckChildren( "PackageForAB", "A,B" );
             r.CheckChildren( "PackageForABLevel1", "ObjectBLevel1" );
+        }
+
+        [Test]
+        public void BuggedGraph()
+        {
+            var fmBuildings = new TestableContainer( "Feedermarket-Buildings.sln" );
+            var fmBuildProj = new TestableItem( "Feedermarket.Buildings" )
+            {
+                Container = fmBuildings
+            };
+            fmBuildings.Children.Add( fmBuildProj );
+
+            var cofely = new TestableContainer( "Cofely.sln" );
+            var cflyTarget = new TestableItem( "CFLY.Target" )
+            {
+                Container = cofely,
+            };
+            cflyTarget.Requires.Add( fmBuildProj );
+            cofely.Children.Add( cflyTarget );
+            var cflyTargetData = new TestableItem( "CFLY.Target.Data" )
+            {
+                Container = cofely
+            };
+            cflyTargetData.Requires.Add( cflyTarget );
+            cofely.Children.Add( cflyTargetData );
+            var cflyIntranet = new TestableItem( "CFLY.Intranet" )
+            {
+                Container = cofely
+            };
+            cflyIntranet.Requires.Add( cflyTargetData );
+            cofely.Children.Add( cflyIntranet );
+            var cflyIntranetData = new TestableItem( "CFLY.Intranet.Data" )
+            {
+                Container = cofely
+            };
+            cflyIntranetData.Requires.Add( cflyIntranet );
+            cofely.Children.Add( cflyIntranetData );
+            var fmClient = new TestableContainer( "Feedermarket-Client.sln" );
+            var fmClientOp = new TestableItem( "Feedermarket.Client.Operation" )
+            {
+                Container = fmClient
+            };
+            fmClientOp.Requires.Add( fmBuildProj );
+            fmClient.Children.Add( fmClientOp );
+            var fmFunctions = new TestableContainer( "Feedermarket-Functions.sln" );
+            var database = new TestableItem( "Database" )
+            {
+                Container = fmFunctions
+            };
+            database.Requires.Add( fmClientOp );
+            fmFunctions.Children.Add( database );
+            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, fmBuildings, cofely, fmClient, fmFunctions );
+            Assert.That( r.SortedItems.Last().FullName != cofely.FullName );
         }
     }
 }
