@@ -1,4 +1,3 @@
-﻿#if !NET461
 using NUnit.Common;
 using NUnitLite;
 using System;
@@ -16,16 +15,3 @@ namespace CK.Text.Tests
 
     }
 }
-#else
-namespace CK.Text.Tests
-{
-    public class Program
-    {
-        public static int Main(string[] args)
-        {
-            return 0;
-        }
-
-    }
-}
-#endif
