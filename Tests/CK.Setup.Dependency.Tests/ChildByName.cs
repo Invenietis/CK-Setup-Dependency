@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using CK.Core;
+using static CK.Testing.MonitorTestHelper;
+
 
 namespace CK.Setup.Dependency.Tests
 {
@@ -24,14 +26,14 @@ namespace CK.Setup.Dependency.Tests
             var cA = new TestableContainer( "CA" );
             {
                 // Starting by CA.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cA, cB );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting by CB.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB, cA );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, cA );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
@@ -45,14 +47,14 @@ namespace CK.Setup.Dependency.Tests
             var oB = new TestableItem( "OB" );
             {
                 // Starting with the Container.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB, oB );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "OB", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting with the Item.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, oB, cB );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, cB );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "OB", "CB" );
                 ResultChecker.SimpleCheck( r );
@@ -62,14 +64,14 @@ namespace CK.Setup.Dependency.Tests
             var oA = new TestableItem( "OA" );
             {
                 // Starting with the Containers.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB, oB, cA, oA );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB, cA, oA );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
             }
             {
                 // Starting with the Items.
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, oB, oA, cB, cA );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, oA, cB, cA );
                 Assert.That( r.IsComplete );
                 r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
                 ResultChecker.SimpleCheck( r );
@@ -81,7 +83,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var cB = new TestableContainer( "CB", "⊐ CA" );
             {
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB );
                 Assert.That( r.IsComplete, Is.False );
                 r.AssertOrdered( "CB.Head", "CB" );
                 Assert.That( r.HasStructureError, Is.True );
@@ -99,7 +101,7 @@ namespace CK.Setup.Dependency.Tests
             var cB1 = new TestableContainer( "CB1", "⊐ ChildOfCB2" );
             var cB2 = new TestableContainer( "CB2", childOfCB2 );
             {
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB1, cB2 );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2 );
                 Assert.That( r.IsComplete, Is.False );
                 r.AssertOrdered( "CB1.Head", "CB2.Head", "CB1", "ChildOfCB2", "CB2" );
                 Assert.That( r.HasStructureError, Is.True );
@@ -122,7 +124,7 @@ namespace CK.Setup.Dependency.Tests
             var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
             // This "discovers" an homonym.
             cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB1, cB2, cB3 );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2, cB3 );
             Assert.That( r.IsComplete, Is.False );
             Assert.That( r.HasSevereStructureError, Is.True );
             Assert.That( r.SortedItems, Is.Null );
@@ -138,7 +140,7 @@ namespace CK.Setup.Dependency.Tests
             var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
             var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
             {
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, cB1, cB2, cB3 );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2, cB3 );
                 Assert.That( r.IsComplete, Is.False );
                 r.AssertOrdered( "CB1.Head", "CB2.Head", "CB3.Head", "CB1", "CB3", "ChildOfCB2", "CB2" );
                 Assert.That( r.HasStructureError, Is.True );

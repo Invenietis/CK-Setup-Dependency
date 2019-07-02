@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D529CE28-8F2F-4A3F-B23B-219217C65F1D}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\TestHelper.config = Tests\TestHelper.config
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E52766AB-54C0-4083-A878-F7566368607F}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setup.Dependency", "CK.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.Setup.Dependency.Tests", "Tests\CK.Setup.Dependency.Tests\CK.Setup.Dependency.Tests.csproj", "{02AA3356-95EE-4435-A7FD-5EAA4625C696}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,5 +48,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{02AA3356-95EE-4435-A7FD-5EAA4625C696} = {D529CE28-8F2F-4A3F-B23B-219217C65F1D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {74A5E494-84F3-466B-B1DE-B965DA458B82}
 	EndGlobalSection
 EndGlobal
