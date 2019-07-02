@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using CK.Core;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setup.Dependency.Tests
 {
@@ -25,7 +26,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void NoItem()
         {
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, Util.Array.Empty<TestableItem>(), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, Util.Array.Empty<TestableItem>(), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems, Is.Empty );
@@ -36,7 +37,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItem()
         {
             var oneItem = new TestableItem( "Test" );
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new[] { oneItem }, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
@@ -49,7 +50,7 @@ namespace CK.Setup.Dependency.Tests
         public void OneItemMissingDependency()
         {
             var oneItem = new TestableItem( "Test", "⇀MissingDep" );
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new[] { oneItem }, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.HasRequiredMissing );
             Assert.That( r.HasStructureError );
@@ -75,7 +76,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.RequiredBy.Add( new TestableItem( "AutoDiscovered" ) );
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new[] { oneItem }, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -91,7 +92,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var oneItem = new TestableItem( "Test" );
             oneItem.Requires.Add( new TestableItem( "AutoDiscovered" ) );
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, new[] { oneItem }, null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -108,7 +109,7 @@ namespace CK.Setup.Dependency.Tests
             var i1 = new TestableItem( "Base" );
             var i2 = new TestableItem( "User", "⇀Base" );
             {
-                IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i1, i2 );
+                IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i1, i2 );
                 Assert.That( r.CycleDetected == null );
                 Assert.That( r.ItemIssues, Is.Empty );
                 Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -120,7 +121,7 @@ namespace CK.Setup.Dependency.Tests
             }
             {
                 // Allowing duplicates (and reversing initial order).
-                IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i2, i1, i1, i2 );
+                IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i2, i1, i1, i2 );
                 Assert.That( r.CycleDetected == null );
                 Assert.That( r.ItemIssues, Is.Empty );
                 Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
@@ -137,7 +138,7 @@ namespace CK.Setup.Dependency.Tests
         {
             var i1 = new TestableItem( "Test" );
             var i2 = new TestableItem( "Test" );
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i1, i2 );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i1, i2 );
             Assert.That( r.HasStructureError );
            // Since we start with i1:
             Assert.That( r.ItemIssues[0].Item, Is.SameAs( i1 ) );
@@ -155,7 +156,7 @@ namespace CK.Setup.Dependency.Tests
             var i4 = new TestableItem( "MCulture", "⇀Res", "⇀Actor" );
             var i5 = new TestableItem( "Appli", "⇀MCulture", "⇀Actor" );
             
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i5, i1, i4, i2, i3 );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, i5, i1, i4, i2, i3 );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 5 ) );
@@ -181,7 +182,7 @@ namespace CK.Setup.Dependency.Tests
             var i5 = new TestableItem( "Appli", "⇀MCulture", "⇀Actor" );
             var i2Like = new TestableItem( "JustLikeRes", "⇀System" );
             
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
@@ -206,7 +207,7 @@ namespace CK.Setup.Dependency.Tests
             var i2Like = new TestableItem( "JustLikeRes", "⇀System", "⇀AnAwfulMissingDependency" );
             
             // Reversing lexical ordering is the last (optional) parameter.
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, true, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, true, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
             Assert.That( r.CycleDetected == null );
 
             // Since we started to add i5, the i5 => AnOtherMissingDependency is the first one, then comes the i2Like and the i3Bis.
@@ -237,7 +238,7 @@ namespace CK.Setup.Dependency.Tests
             var d = new TestableItem( "D", "⇀E" );
             var e = new TestableItem( "E", "⇀F" );
             var f = new TestableItem( "F", "⇀C" );
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, e, b, c, d, f, a );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, e, b, c, d, f, a );
             Assert.That( r.SortedItems, Is.Null );
             Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );           
             Assert.That( r.CycleDetected.Skip(1).Select( ec => ec.Item ), Is.EquivalentTo( new[] { c, d, e, f } ), "Cycle is detected in its entirety: the 'head' can be any participant." );
@@ -252,7 +253,7 @@ namespace CK.Setup.Dependency.Tests
             var b = new TestableItem( "B", "⇀C" );
             var c = new TestableItem( "C", "⇀C", "⇀D" );
             var d = new TestableItem( "D" );
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, b, c, d, a );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, b, c, d, a );
             Assert.That( r.SortedItems, Is.Null );
             Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item: this is always true (even if there is only one participant)." );
             Assert.That( r.CycleDetected.Count, Is.EqualTo( 2 ), "Cycle is 'c=>c'" );
@@ -268,7 +269,7 @@ namespace CK.Setup.Dependency.Tests
             var a = new TestableItem( "A" );
             var d = new TestableItem( "D", "⇀A" );
             var e = new TestableItem( "E", "↽D" );
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, e, d, a );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, e, d, a );
             r.AssertOrdered( "A", "E", "D" );
             ResultChecker.SimpleCheck( r );
         }
@@ -291,7 +292,7 @@ namespace CK.Setup.Dependency.Tests
             var h = new TestableItem( "H", "⇀B" );
             var i = new TestableItem( "I", "⇀D" );
 
-            var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, e, g, b, h, c, d, i, f, a );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, e, g, b, h, c, d, i, f, a );
             r.AssertOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" );
             ResultChecker.SimpleCheck( r );
 
@@ -306,13 +307,13 @@ namespace CK.Setup.Dependency.Tests
             // d
             // i
             e.Add( "↽ D" );
-            r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, e, c, b, g, h, i, d, f, a );
+            r = DependencySorter.OrderItems( TestHelper.Monitor, e, c, b, g, h, i, d, f, a );
             r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             ResultChecker.SimpleCheck( r );
 
             // This does not change the dependency order per se (it just contributes to make D "heavier" but do not change its rank).
             h.Add( "↽ D" );
-            r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, f, i, b, g, h, d, e, a, c );
+            r = DependencySorter.OrderItems( TestHelper.Monitor, f, i, b, g, h, d, e, a, c );
             r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             ResultChecker.SimpleCheck( r );
 
@@ -320,7 +321,7 @@ namespace CK.Setup.Dependency.Tests
             // We do not consider them as "Missing Dependencies" since they are NOT missing dependencies :-).
             a.Add( "↽KExistePas", "↽DuTout" );
             b.Add( "↽ KExistePas" );
-            r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, f, b, h, i, e, g, a, d, c );
+            r = DependencySorter.OrderItems( TestHelper.Monitor, f, b, h, i, e, g, a, d, c );
             r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
             Assert.That( r.ItemIssues, Is.Empty );
             ResultChecker.SimpleCheck( r );
@@ -333,7 +334,7 @@ namespace CK.Setup.Dependency.Tests
             //  - B => D => E => C => H => B
             Assert.That( d.RequiredBy, Is.Null.Or.Empty, "Otherwise this test will fail :-)." );
             d.Add( "↽B" );
-            r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, f, b, h, i, e, g, a, d, c );
+            r = DependencySorter.OrderItems( TestHelper.Monitor, f, b, h, i, e, g, a, d, c );
             Assert.That( r.SortedItems, Is.Null );
             Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );
 
@@ -368,7 +369,7 @@ namespace CK.Setup.Dependency.Tests
             i6.RelatedItems.Add( i2 );
 
             {
-                var r = DependencySorter.OrderItems( TestHelper.ConsoleMonitor, i1 );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, i1 );
                 Assert.That( r.HasStructureError, Is.False );
                 Assert.That( r.IsComplete, Is.True );
                 Assert.That( r.SortedItems.Count, Is.EqualTo( 6 ) );
