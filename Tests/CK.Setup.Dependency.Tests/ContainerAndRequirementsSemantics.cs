@@ -101,7 +101,7 @@ namespace CK.Setup.Dependency.Tests
 
 
         [Test]
-        public void ContainerAndRequires()
+        public void Container_and_requires_are_not_so_easy_to_understand()
         {
             using( TestableItem.IgnoreCheckCount() )
             {

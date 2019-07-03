@@ -238,7 +238,7 @@ namespace CK.Setup.Dependency.Tests
 
 
         [Test]
-        public void MissingDependencies()
+        public void missing_dependencies()
         {
             var c = new TestableContainer( "Root", "⇀Direct",
                         new TestableContainer( "Pierre", "↽?Direct", "↽Direct",
@@ -266,7 +266,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void CycleDetection0()
+        public void Cycle_detection_0()
         {
             var c = new TestableContainer( "A", "⇀ A" );
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
@@ -276,7 +276,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void CycleDetection1()
+        public void Cycle_detection_1()
         {
             var c = new TestableContainer( "Root",
                         new TestableContainer( "Pierre", "⇀Stratus",
@@ -299,7 +299,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void CycleDetection2()
+        public void Cycle_detection_2()
         {
             var c = new TestableContainer( "Root",
                         new TestableContainer( "Pierre",
@@ -319,7 +319,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void CycleDetection3()
+        public void Cycle_detection_3()
         {
             var c = new TestableContainer( "Root",
                         new TestableContainer( "Pierre",
@@ -386,7 +386,7 @@ namespace CK.Setup.Dependency.Tests
         }
 
         [Test]
-        public void SimpleGraph()
+        public void Simple_graph()
         {
             var pAB = new TestableContainer( "PackageForAB" );
             var oA = new TestableItem( "A" );
@@ -410,39 +410,61 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void Cofely_Feedermarket_solutions_and_projects()
         {
-            TestHelper.Monitor.Info( "Cofely_Feedermarket_solutions_and_projects" );
             var fmBuildings = new TestableContainer( "Feedermarket-Buildings.sln" );
-
-            var fmBuildProj = new TestableItem( "Feedermarket.Buildings" ) { Container = fmBuildings };
+            {
+                var fmBuildProj = new TestableItem( "Feedermarket.Buildings" )
+                {
+                    Container = fmBuildings
+                };
+                fmBuildings.Children.Add( fmBuildProj );
+            }
+            var fmBuildPckg = new TestableItem( "NuGet:Feedermarket.Buildings" );
+            fmBuildPckg.Requires.Add( fmBuildings );
 
             var cofely = new TestableContainer( "Cofely.sln" );
-            var cflyTarget = new TestableItem( "CFLY.Target" ) { Container = cofely };
-            cflyTarget.Requires.Add( fmBuildProj );
+            {
+                var cflyTarget = new TestableItem( "CFLY.Target" );
+                cflyTarget.Requires.Add( fmBuildPckg );
+                cofely.Children.Add( cflyTarget );
+                var cflyTargetData = new TestableItem( "CFLY.Target.Data" );
+                cflyTargetData.Requires.Add( cflyTarget );
+                cofely.Children.Add( cflyTargetData );
+                var cflyIntranet = new TestableItem( "CFLY.Intranet" );
+                cflyIntranet.Requires.Add( cflyTargetData );
+                cofely.Children.Add( cflyIntranet );
+                var cflyIntranetData = new TestableItem( "CFLY.Intranet.Data" );
+                cflyIntranetData.Requires.Add( cflyIntranet );
+                cofely.Children.Add( cflyIntranetData );
 
-            var cflyTargetData = new TestableItem( "CFLY.Target.Data" ) { Container = cofely };
-            cflyTargetData.Requires.Add( cflyTarget );
-
-            var cflyIntranet = new TestableItem( "CFLY.Intranet" ) { Container = cofely };
-            cflyIntranet.Requires.Add( cflyTargetData );
-
-            var cflyIntranetData = new TestableItem( "CFLY.Intranet.Data" ) { Container = cofely };
-            cflyIntranetData.Requires.Add( cflyIntranet );
+                var cflyGed = new TestableItem( "CFLY.Ged.Extensions" );
+                cflyGed.Requires.Add( cflyIntranetData );
+                cofely.Children.Add( cflyGed );
+            }
 
             var fmClient = new TestableContainer( "Feedermarket-Client.sln" );
-            var fmClientOp = new TestableItem( "Feedermarket.Client.Operation" ) { Container = fmClient };
-            fmClientOp.Requires.Add( fmBuildProj );
+            {
+                var fmClientOp = new TestableItem( "Feedermarket.Client.Operation" );
+                fmClientOp.Requires.Add( fmBuildPckg );
+                fmClient.Children.Add( fmClientOp );
+            }
+            var fmClientOpPckg = new TestableItem( "NuGet:Feedermarket.Client.Operations" );
+            fmClientOpPckg.Requires.Add( fmClient );
 
             var fmFunctions = new TestableContainer( "Feedermarket-Functions.sln" );
-            var database = new TestableItem( "Database" ) { Container = fmFunctions };
-            database.Requires.Add( fmClientOp );
+            {
+                var database = new TestableItem( "Database" );
+                fmFunctions.Children.Add( database );
+                database.Requires.Add( fmClientOpPckg );
+            }
 
             var options = new DependencySorterOptions()
             {
                 HookInput = items => items.Trace( TestHelper.Monitor ),
                 HookOutput = items => items.Trace( TestHelper.Monitor )
             };
-            var r = DependencySorter.OrderItems( TestHelper.Monitor, options, fmBuildings, cofely, fmClient, fmFunctions );
-            Assert.That( r.SortedItems.Last().FullName != cofely.FullName );
+
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, options, cofely, fmBuildings, fmClient, fmFunctions );
+            ResultChecker.SimpleCheck( r );
         }
     }
 }

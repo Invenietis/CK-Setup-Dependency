@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -106,14 +106,14 @@ namespace CK.Setup
         }
 
         /// <summary>
-        /// Returs detailed information.
+        /// Returns detailed information.
         /// </summary>
         /// <param name="this">This sorted item.</param>
         /// <returns>Detailed information.</returns>
         public static string ToStringDetails( this ISortedItem @this )
         {
             StringBuilder b = new StringBuilder();
-            b.Append( @this.ItemKind.ToString()[0] ).Append( " - " ).Append( @this.FullName ).Append( " (" ).Append( @this.Item.GetType().Name ).AppendLine( ")" )
+            b.Append( @this.ItemKind.ToString()[0] ).Append( " - " ).Append( @this.FullName ).Append( " -[" ).Append( @this.Rank ).Append( "] (" ).Append( @this.Item.GetType().Name ).AppendLine( ")" )
                 .Append( "| Container = " ).Append( @this.Container != null ? @this.Container.FullName : "(null)" ).AppendLine()
                 .Append( "| Generalization = " ).Append( @this.Generalization != null ? @this.Generalization.FullName : "(null)" ).AppendLine()
                 .Append( "| Requires = " ).AppendStrings( @this.Requires.Select( o => o.FullName ) ).AppendLine()

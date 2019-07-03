@@ -9,8 +9,10 @@ namespace CK.Setup.Dependency.Tests
     {
         public static int Main( string[] args )
         {
-            return new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
+            var r = new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
                 .Execute( args, new ExtendedTextWrapper( Console.Out ), Console.In );
+            Console.ReadLine();
+            return r;
         }
 
     }
