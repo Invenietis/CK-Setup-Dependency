@@ -11,7 +11,6 @@ namespace CK.Setup.Dependency.Tests
         {
             var r = new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
                 .Execute( args, new ExtendedTextWrapper( Console.Out ), Console.In );
-            Console.ReadLine();
             return r;
         }
 
