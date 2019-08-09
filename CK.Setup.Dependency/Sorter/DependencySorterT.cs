@@ -96,7 +96,7 @@ namespace CK.Setup
             // by a LINQ Select. The other way would be to compute the list of Entries for each ISortedItem.Requires
             // before returning the result (this would anyway imply a dedicated field to store the result of the mapping).
             // Since ISortedItem.Requires is not necessarily called, I choose the dynamic way... It's a pity but there
-            // is no way to it differently...
+            // is no way to do it differently...
             readonly Dictionary<object, object> _entries;
 
             public Entry( Dictionary<object, object> entries, string fullName )
@@ -834,10 +834,7 @@ namespace CK.Setup
                         // Support for "intrinsic optional object".
                         // Intrinsic optional objects are IDependentItem that implement IDependentItemRef and 
                         // for which Optional is true.
-                        // The idea is that this kind of objects should NOT be automatically registered. 
-                        // Generalization is currently the ONLY relationships that handles this kind of beast
-                        // but it could be (I think) generalized to all relationships.
-                        // Supporting these intrisically optional objects should be useful for easy (and dynamic) feature flipping.
+                        // The idea is that this kind of objects is NOT automatically registered. 
 
                         if( gen != null && !genRef.Optional ) RegisterEntry( gen, null, null );
                         // SpecializedItems contains items and container (but no heads).
@@ -1100,7 +1097,10 @@ namespace CK.Setup
             public void Process()
             {
                 Debug.Assert( HasSevereStructureError == false );
-                if( _options.HookInput != null ) _options.HookInput( _entries.Where( e => e.Key is String ).Select( e => (Entry)e.Value ).Where( e => e.HeadIfGroupOrContainer == null ).Select( e => e.Item ) );
+                _options.HookInput?.Invoke( _entries.Where( e => e.Key is String )
+                                                    .Select( e => (Entry)e.Value )
+                                                    .Where( e => e.HeadIfGroupOrContainer == null )
+                                                    .Select( e => e.Item ) );
                 // Note: Since we can NOT support dynamic resolution of a missing dependency
                 // (through a function like ResolveMissing( fullName ) because of
                 // the RequiredBy: if a newly added item has a RequiredBy, we should
@@ -1141,7 +1141,7 @@ namespace CK.Setup
                 {
                     IEnumerable<IDependentItemRef> requirements;
 
-                    // Starts with reverse requirements (RequiredBy) since during the registeration phasis,
+                    // Starts with reverse requirements (RequiredBy) since during the registration phasis,
                     // the Requires HashSet has been populated only with RequiredBy from others.
                     #region Reverse requirements (RequiredBy) handling.
                     requirements = e.GroupIfHead == null ? e.Requires : e.GroupIfHead.Requires;
@@ -1253,7 +1253,6 @@ namespace CK.Setup
                     // Checks (Debug only) that an element that claims to belong to a Container
                     // is actually in the linked list of its children.
                     e.Container.CheckContainerIsHeadOrContains( e );
-
                     if( HandleDependency( ref rank, e, CycleExplainedElement.ElementOfContainer, e.Container.HeadIfGroupOrContainer ) ) return true;
                 }
                 // Handles the element's Groups: their heads are required by this item (be it a head, a container, a group or an item).
@@ -1299,6 +1298,14 @@ namespace CK.Setup
                 return false;
             }
 
+            /// <summary>
+            /// Handles the dependency: computes its rank.
+            /// </summary>
+            /// <param name="rank">The rank to update.</param>
+            /// <param name="e">The dependent entry.</param>
+            /// <param name="relation">The relation kind used for cycle dependency./param>
+            /// <param name="oeDep">The target entry.</param>
+            /// <returns>True if a cycle has been detected.</returns>
             bool HandleDependency( ref int rank, Entry e, char relation, Entry oeDep )
             {
                 // Cycle detection.

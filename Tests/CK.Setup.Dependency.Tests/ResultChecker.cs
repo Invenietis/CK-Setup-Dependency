@@ -39,6 +39,11 @@ namespace CK.Setup.Dependency.Tests
                 {
                     e.CheckStartDependencySortCountAndReset();
                 }
+                if( r.SortedItems.Count > 0 )
+                {
+                    var ranks = r.SortedItems.Select( s => s.Rank ).Distinct().OrderBy( Util.FuncIdentity ).ToList();
+                    Assert.That( ranks.Count == ranks.Last() );
+                }
             }
             CheckMissingInvariants( r );
         }

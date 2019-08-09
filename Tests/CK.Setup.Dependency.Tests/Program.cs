@@ -1,31 +1,18 @@
-﻿#if !NET461
 using NUnit.Common;
 using NUnitLite;
 using System;
 using System.Reflection;
 
-namespace CK.Text.Tests
+namespace CK.Setup.Dependency.Tests
 {
     public class Program
     {
         public static int Main( string[] args )
         {
-            return new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
+            var r = new AutoRun( typeof( Program ).GetTypeInfo().Assembly )
                 .Execute( args, new ExtendedTextWrapper( Console.Out ), Console.In );
+            return r;
         }
 
     }
 }
-#else
-namespace CK.Text.Tests
-{
-    public class Program
-    {
-        public static int Main(string[] args)
-        {
-            return 0;
-        }
-
-    }
-}
-#endif

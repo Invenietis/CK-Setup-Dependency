@@ -105,44 +105,32 @@ namespace CK.Setup.Dependency.Tests
             {
                 if( _startDependencySortCount != -1 )
                 {
-                    Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+                    Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), $"StartDependencySort must have been called once and only once ({_fullName})." );
                 }
                 return _fullName; 
             }
             set { _fullName = value; } 
         }
 
-        public IList<IDependentItemRef> Requires { get { return _requires; } }
+        public IList<IDependentItemRef> Requires => _requires; 
 
-        public IList<IDependentItemRef> RequiredBy { get { return _requiredBy; } }
+        public IList<IDependentItemRef> RequiredBy => _requiredBy; 
 
-        public IList<IDependentItemGroupRef> Groups { get { return _groups; } }
+        public IList<IDependentItemGroupRef> Groups => _groups; 
 
-        IEnumerable<IDependentItemRef> IDependentItem.Requires { get { return _requires; } }
+        IEnumerable<IDependentItemRef> IDependentItem.Requires => _requires; 
 
-        IEnumerable<IDependentItemRef> IDependentItem.RequiredBy { get { return _requiredBy; } }
+        IEnumerable<IDependentItemRef> IDependentItem.RequiredBy => _requiredBy;
 
-        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups { get { return _groups; } }
+        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups => _groups; 
 
-        public IList<IDependentItem> RelatedItems
-        {
-            get { return _relatedItems ?? (_relatedItems = new List<IDependentItem>()); }
-        }
+        public IList<IDependentItem> RelatedItems => _relatedItems ?? (_relatedItems = new List<IDependentItem>());
 
-        IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister()
-        {
-            return _relatedItems;
-        }
-
-        public override string ToString()
-        {
-            return FullName;
-        }
-
-        bool IDependentItemRef.Optional
-        {
-            get { return false; }
-        }
+        IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
+        
+        public override string ToString() => FullName;
+        
+        bool IDependentItemRef.Optional => false; 
 
         object IDependentItem.StartDependencySort( IActivityMonitor m )
         {

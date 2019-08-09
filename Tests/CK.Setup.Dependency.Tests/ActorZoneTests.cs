@@ -12,6 +12,7 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using System.Reflection;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setup.Dependency.Tests
 {
@@ -43,11 +44,11 @@ namespace CK.Setup.Dependency.Tests
 
             {
                 var r = DependencySorter.OrderItems(
-                    TestHelper.ConsoleMonitor,
+                    TestHelper.Monitor,
                     new DependencySorterOptions()
                     {
-                        HookInput = TestHelper.Trace,
-                        HookOutput = sortedItems => TestHelper.Trace( sortedItems, false )
+                        HookInput = items => items.Trace( TestHelper.Monitor ),
+                        HookOutput = sortedItems => sortedItems.Trace( TestHelper.Monitor )
                     }, 
                     sqlDatabaseDefault, basicPackage, basicActor, basicGroup, zonePackage, zoneGroup, securityZone );
                 Assert.That( r.IsComplete );
