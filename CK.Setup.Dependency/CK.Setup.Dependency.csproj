@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Description>Contains Dependent Items (with Containers and Groups) model and the ordering algorithm.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.2.0" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.3.0" />
   </ItemGroup>
 </Project>
