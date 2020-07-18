@@ -17,11 +17,26 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This set of dependent items.</param>
         /// <param name="monitor">Monitor to use.</param>
-        public static void Trace( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor )
+        public static void Trace( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor ) => Log( @this, monitor, LogLevel.Trace );
+
+        /// <summary>
+        /// Debug a set of <see cref="IDependentItem"/> to a monitor.
+        /// </summary>
+        /// <param name="this">This set of dependent items.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        public static void Debug( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor ) => Log( @this, monitor, LogLevel.Debug );
+
+        /// <summary>
+        /// Log a set of <see cref="IDependentItem"/> to a monitor.
+        /// </summary>
+        /// <param name="this">This set of dependent items.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="level">The loglevel to use.</param>
+        public static void Log( this IEnumerable<IDependentItem> @this, IActivityMonitor monitor, LogLevel level )
         {
-            using( monitor.OpenTrace( "Dependent items (C - for container, G - for group and I - for item)" ) )
+            using( monitor.OpenGroup( level, "Dependent items (C - for container, G - for group and I - for item)" ) )
             {
-                foreach( var i in @this ) monitor.Trace( i.ToStringDetails() );
+                foreach( var i in @this ) monitor.Log( level, i.ToStringDetails() );
             }
         }
 
@@ -96,12 +111,27 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This et of sorte item.</param>
         /// <param name="monitor">Monitor to use.</param>
-        public static void Trace( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor  )
+        public static void Trace( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor ) => Log( @this, monitor, LogLevel.Trace );
+
+        /// <summary>
+        /// Debug detailed information for a set of <see cref="ISortedItem"/>.
+        /// </summary>
+        /// <param name="this">This et of sorte item.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        public static void Debug( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor ) => Log( @this, monitor, LogLevel.Debug );
+
+        /// <summary>
+        /// Log detailed information for a set of <see cref="ISortedItem"/>.
+        /// </summary>
+        /// <param name="this">This et of sorte item.</param>
+        /// <param name="monitor">Monitor to use.</param>
+        /// <param name="level">The log level.</param>
+        public static void Log( this IEnumerable<ISortedItem> @this, IActivityMonitor monitor, LogLevel level )
         {
-            using( monitor.OpenTrace( $"Sorted items (C - for container, G - for group and I - for item)" ) )
+            using( monitor.OpenGroup( level, $"Sorted items (C - for container, G - for group and I - for item)" ) )
             {
                 foreach( var i in @this )
-                    if( i.HeadForGroup == null ) monitor.Trace( i.ToStringDetails() );
+                    if( i.HeadForGroup == null ) monitor.Log( level, i.ToStringDetails() );
             }
         }
 
@@ -128,6 +158,6 @@ namespace CK.Setup
         #endregion
 
 
-        
+
     }
 }
