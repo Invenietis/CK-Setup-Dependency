@@ -392,7 +392,7 @@ namespace CK.Setup
             IEnumerable<Entry> RemoveMissing( IEnumerable<IDependentItemRef> r )
             {
                 return r == null
-                    ? Util.Array.Empty<Entry>()
+                    ? Array.Empty<Entry>()
                         // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
                         // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
                         // ==> We must TryGetValue and filter unexisting sorted items.
@@ -404,7 +404,7 @@ namespace CK.Setup
             {
                 // Groups is only on the Group (not on its head).
                 var holder = GroupIfHead ?? this;
-                return holder.Groups != null ? holder.Groups : (IEnumerable<Entry>)Util.Array.Empty<Entry>();
+                return holder.Groups != null ? holder.Groups : (IEnumerable<Entry>)Array.Empty<Entry>();
             }
 
             IEnumerable<Entry> GetChildren()
