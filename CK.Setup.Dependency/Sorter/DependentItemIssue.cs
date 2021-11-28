@@ -1,4 +1,4 @@
-﻿#region Proprietary License
+#region Proprietary License
 /*----------------------------------------------------------------------------
 * This file (CK.Setup.Dependency\Sorter\DependentItemIssue.cs) is part of CK-Database. 
 * Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
@@ -206,17 +206,17 @@ namespace CK.Setup
         /// <summary>
         /// Gets the list of conflicting containers if any. Never null.
         /// </summary>
-        public IEnumerable<string> ExtraneousContainers => _extraneousContainers ?? Util.Array.Empty<string>();
+        public IEnumerable<string> ExtraneousContainers => _extraneousContainers ?? Array.Empty<string>();
 
         /// <summary>
         /// Gets the list of <see cref="IDependentItem"/> that share the same name. Never null.
         /// </summary>
-        public IEnumerable<IDependentItem> Homonyms => _homonyms ?? Util.Array.Empty<IDependentItem>();
+        public IEnumerable<IDependentItem> Homonyms => _homonyms ?? Array.Empty<IDependentItem>();
 
         /// <summary>
         /// Gets the list of missing children if any (when named references are used). Never null.
         /// </summary>
-        public IEnumerable<string> MissingChildren => _missingChildren ?? Util.Array.Empty<string>();
+        public IEnumerable<string> MissingChildren => _missingChildren ?? Array.Empty<string>();
 
         /// <summary>
         /// Gets a list of missing dependencies either optional (starting with '?') or required. 
@@ -224,7 +224,7 @@ namespace CK.Setup
         /// It is never null and there are no duplicates in this list and a required dependency "hides" an optional one:
         /// if a dependency is both required and optional, only the required one appears in this list.
         /// </summary>
-        public IEnumerable<string> MissingDependencies => _missingDep ?? Util.Array.Empty<string>();
+        public IEnumerable<string> MissingDependencies => _missingDep ?? Array.Empty<string>();
 
         /// <summary>
         /// Gets a list of required missing dependencies for this <see cref="Item"/>. 

@@ -45,7 +45,7 @@ namespace CK.Setup
                 SortedItems = result;
                 _cycle = null;
             }
-            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? itemIssues : (IReadOnlyList<DependentItemIssue>)Util.Array.Empty<DependentItemIssue>();
+            ItemIssues = itemIssues != null && itemIssues.Count > 0 ? itemIssues : (IReadOnlyList<DependentItemIssue>)Array.Empty<DependentItemIssue>();
             _requiredMissingIsError = true;
             _itemIssueWithStructureErrorCount = -1;
         }

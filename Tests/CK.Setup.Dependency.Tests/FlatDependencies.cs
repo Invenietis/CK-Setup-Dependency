@@ -26,7 +26,7 @@ namespace CK.Setup.Dependency.Tests
         [Test]
         public void NoItem()
         {
-            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, Util.Array.Empty<TestableItem>(), null );
+            IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, Array.Empty<TestableItem>(), null );
             Assert.That( r.CycleDetected == null );
             Assert.That( r.ItemIssues, Is.Empty );
             Assert.That( r.SortedItems, Is.Empty );
