@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CK.Setup.Dependency\CK.Setup.Dependency.csproj" />
-    <PackageReference Include="CK.Testing.Monitoring" Version="3.0.0-r08-00-0005-develop" />
+    <PackageReference Include="CK.Testing.Monitoring" Version="3.0.0-r08-00-0006-develop" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnitLite" Version="3.13.3" />
   </ItemGroup>
