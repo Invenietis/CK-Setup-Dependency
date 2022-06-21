@@ -132,7 +132,7 @@ namespace CK.Setup.Dependency.Tests
             // RequiredBy applies to normal items and to groups (the container itself, not its head).
             foreach( var invertReq in o.Item.RequiredBy )
             {
-                var after = _byName.GetValueWithDefault( invertReq.FullName, null );
+                var after = _byName.GetValueOrDefault( invertReq.FullName, null );
                 if( after != null ) Assert.That( o.Index < after.Index, "{0} is before {1} (since {1} is required by {0}).", o.FullName, after.FullName );
             }
         }

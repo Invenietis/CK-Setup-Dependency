@@ -396,7 +396,7 @@ namespace CK.Setup
                         // We can not blindly use (ISortedItem)_entries[r.FullName] because if DependencySorterResult.HasRequiredMissing is true
                         // and the resulting graph is nevertheless used (for Tracing by example) there will be no associated ISortedItem.
                         // ==> We must TryGetValue and filter unexisting sorted items.
-                    : r.Select( r2 => (Entry)_entries.GetValueWithDefault( r2.FullName, null ) )
+                    : r.Select( r2 => (Entry)_entries.GetValueOrDefault( r2.FullName, null ) )
                         .Where( e => e != null );
             }
 
