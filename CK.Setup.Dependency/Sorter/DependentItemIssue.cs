@@ -244,7 +244,7 @@ namespace CK.Setup
             if( StructureError != DependentItemStructureError.None )
             {
                 TextWriter writer = new StringWriter();
-                var m = new ActivityMonitor( false );
+                var m = new ActivityMonitor( ActivityMonitorOptions.SkipAutoConfiguration );
                 m.Output.RegisterClient( new ActivityMonitorErrorCounter( generateConclusion: true ) );
                 m.Output.RegisterClient( new ActivityMonitorTextWriterClient( writer.Write ) );
                 LogError( m );
