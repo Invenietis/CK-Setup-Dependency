@@ -20,12 +20,12 @@ namespace CK.Setup
     /// </summary>
     public sealed class DependentItemIssue
     {
-        string[] _missingDep;
-        string[] _extraneousContainers;
-        string[] _invalidGroups;
-        string[] _missingChildren;
-        string[] _missingGroups;
-        IDependentItem[] _homonyms;
+        string[]? _missingDep;
+        string[]? _extraneousContainers;
+        string[]? _invalidGroups;
+        string[]? _missingChildren;
+        string[]? _missingGroups;
+        IDependentItem[]? _homonyms;
         int _nbRequiredMissingDep;
         
         /// <summary>
@@ -41,14 +41,14 @@ namespace CK.Setup
 
         internal void AddHomonym( IDependentItem homonym )
         {
-            Debug.Assert( homonym != null );
-            Debug.Assert( Item != homonym && Item.FullName == homonym.FullName );
+            Throw.DebugAssert( homonym != null );
+            Throw.DebugAssert( Item != homonym && Item.FullName == homonym.FullName );
             Append( ref _homonyms, homonym );
         }
 
         internal void AddMissing( IDependentItemRef dep )
         {
-            Debug.Assert( !String.IsNullOrWhiteSpace( dep.FullName ) );
+            Throw.DebugAssert( !String.IsNullOrWhiteSpace( dep.FullName ) );
             string missing = dep.FullName;
             if( dep.Optional ) missing = '?' + missing;
             if( _missingDep == null )
@@ -57,7 +57,7 @@ namespace CK.Setup
             }
             else
             {
-                Debug.Assert( Array.IndexOf( _missingDep, missing ) < 0, "Duplicates are handled by ComputeRank." );
+                Throw.DebugAssert( "Duplicates are handled by ComputeRank.", Array.IndexOf( _missingDep, missing ) < 0 );
                 int len = _missingDep.Length;
                 // This is to maintain the fact that a strong missing 
                 // dependency hides an optional one.
@@ -103,7 +103,7 @@ namespace CK.Setup
             Append( ref _missingGroups, name );
         }
 
-        private void Append<T>( ref T[] a, T e )
+        static void Append<T>( ref T[]? a, T e )
         {
             if( a == null ) a = new T[] { e };
             else
@@ -143,7 +143,7 @@ namespace CK.Setup
         /// <param name="monitor">Monitor to use. Must not be null.</param>
         public void LogError( IActivityMonitor monitor )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
             if( StructureError != DependentItemStructureError.None )
             {
                 using( monitor.OpenInfo( $"Errors on '{Item.FullName}'" ) )
@@ -170,10 +170,12 @@ namespace CK.Setup
                     }
                     if( (StructureError & DependentItemStructureError.DeclaredGroupRefusedToBeAGroup) != 0 )
                     {
+                        Throw.DebugAssert( _invalidGroups != null );
                         monitor.Error( $"Item '{Item.FullName}' declares Groups that states that they are actually not Groups (their ItemKind is SimpleItem): '{String.Join( "', '", _invalidGroups )}'." );
                     }
                     if( (StructureError & DependentItemStructureError.MissingNamedGroup) != 0 )
                     {
+                        Throw.DebugAssert( _missingGroups != null );
                         monitor.Error( $"Item '{Item.FullName}' declares required Groups that are not registered: '{String.Join( "', '", _missingGroups )}'. " );
                     }
                     if( _homonyms != null )
@@ -197,6 +199,7 @@ namespace CK.Setup
                     }
                     if( _nbRequiredMissingDep > 0 )
                     {
+                        Throw.DebugAssert( _missingDep != null );
                         monitor.Error( $"Missing required dependencies: '{String.Join( "', '", _missingDep.Where( s => s[0] != '?' ) )}'." );
                     }
                 }
@@ -228,12 +231,9 @@ namespace CK.Setup
 
         /// <summary>
         /// Gets a list of required missing dependencies for this <see cref="Item"/>. 
-        /// Null if <see cref="RequiredMissingCount"/> is 0.
+        /// Empty if <see cref="RequiredMissingCount"/> is 0.
         /// </summary>
-        public IEnumerable<string> RequiredMissingDependencies
-        {
-            get { return _nbRequiredMissingDep > 0 ? _missingDep.Where( s => s[0] != '?' ) : null; }
-        }
+        public IEnumerable<string> RequiredMissingDependencies => _nbRequiredMissingDep > 0 ? _missingDep!.Where( s => s[0] != '?' ) : Array.Empty<string>();
 
         /// <summary>
         /// Overridden to use <see cref="LogError"/>.
@@ -248,7 +248,7 @@ namespace CK.Setup
                 m.Output.RegisterClient( new ActivityMonitorErrorCounter( generateConclusion: true ) );
                 m.Output.RegisterClient( new ActivityMonitorTextWriterClient( writer.Write ) );
                 LogError( m );
-                return writer.ToString();
+                return writer.ToString()!;
             }
             return "(no error)";
         }

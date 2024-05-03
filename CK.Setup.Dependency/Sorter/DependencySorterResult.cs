@@ -19,17 +19,16 @@ namespace CK.Setup
     /// </summary>
     public sealed class DependencySorterResult<T> : IDependencySorterResult where T : class, IDependentItem
     {
-        readonly IReadOnlyList<CycleExplainedElement> _cycle;
+        readonly IReadOnlyList<CycleExplainedElement>? _cycle;
         int _itemIssueWithStructureErrorCount;
         bool _requiredMissingIsError;
 
-        internal DependencySorterResult( 
-            List<DependencySorter<T>.Entry> result, 
-            List<CycleExplainedElement> cycle, 
-            List<DependentItemIssue> itemIssues,
-            int startErrorCount,
-            bool hasStartFatal,
-            bool hasSevereStructureError )
+        internal DependencySorterResult( List<DependencySorter<T>.Entry>? result, 
+                                         List<CycleExplainedElement>? cycle, 
+                                         List<DependentItemIssue> itemIssues,
+                                         int startErrorCount,
+                                         bool hasStartFatal,
+                                         bool hasSevereStructureError )
         {
             Debug.Assert( (result != null) == (cycle == null && !hasStartFatal && !hasSevereStructureError) );
             HasStartFatal = hasStartFatal;
@@ -53,15 +52,15 @@ namespace CK.Setup
         /// <summary>
         /// Non null if a cycle has been detected.
         /// </summary>
-        public IReadOnlyList<ICycleExplainedElement> CycleDetected => _cycle;
+        public IReadOnlyList<ICycleExplainedElement>? CycleDetected => _cycle;
         
         /// <summary>
         /// Gets the list of <see cref="ISortedItem{T}"/>: null if <see cref="CycleDetected"/> is not null
         /// or <see cref="HasStartFatal"/> or <see cref="HasSevereStructureError"/> are true.
         /// </summary>
-        public readonly IReadOnlyList<ISortedItem<T>> SortedItems;
+        public readonly IReadOnlyList<ISortedItem<T>>? SortedItems;
 
-        IReadOnlyList<ISortedItem> IDependencySorterResult.SortedItems  => SortedItems; 
+        IReadOnlyList<ISortedItem>? IDependencySorterResult.SortedItems  => SortedItems; 
 
         /// <summary>
         /// List of <see cref="DependentItemIssue"/>. Never null.
@@ -162,20 +161,19 @@ namespace CK.Setup
             get { return CycleDetected == null && !HasStructureError && !HasStartFatal && StartErrorCount == 0; }
         }
 
-        /// <summary>
-        /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
-        /// </summary>
-        public string CycleExplainedString => CycleDetected != null ? String.Join( " ", CycleDetected ) : null; 
+        /// <inheritdoc />
+        public string? CycleExplainedString => CycleDetected != null ? String.Join( " ", CycleDetected ) : null; 
 
         /// <summary>
         /// Gets a description of the required missing dependencies. 
         /// Null if no missing required dependency exists.
         /// </summary>
-        public string RequiredMissingDependenciesExplained
+        public string? RequiredMissingDependenciesExplained
         {
             get 
             { 
-                string s = String.Join( "', '", ItemIssues.Where( d => d.RequiredMissingCount > 0 ).Select( d => "'" + d.Item.FullName + "' => {'" + String.Join( "', '", d.RequiredMissingDependencies ) + "'}" ) );
+                string s = String.Join( "', '", ItemIssues.Where( d => d.RequiredMissingCount > 0 )
+                                                          .Select( d => "'" + d.Item.FullName + "' => {'" + String.Join( "', '", d.RequiredMissingDependencies ) + "'}" ) );
                 return s.Length == 0 ? null : s; 
             }
         }
@@ -186,7 +184,7 @@ namespace CK.Setup
         /// <param name="monitor">The monitor to use.</param>
         public void LogError( IActivityMonitor monitor )
         {
-            if( monitor == null ) throw new ArgumentNullException( "monitor" );
+            Throw.CheckNotNullArgument( monitor );
             if( HasStructureError )
             {
                 foreach( var bug in ItemIssues.Where( d => d.StructureError != DependentItemStructureError.None ) )

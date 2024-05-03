@@ -25,9 +25,9 @@ namespace CK.Setup
         /// <param name="this">This enumerable.</param>
         /// <param name="fullNameProvider">Name provider. By returning null, the reference does not appear in the resulting enumerable.</param>
         /// <returns>A collection of <see cref="IDependentItemRef"/> whose FullName of named references may have changed.</returns>
-        public static IEnumerable<IDependentItemRef> SetRefFullName( this IEnumerable<IDependentItemRef> @this, Func<IDependentItemNamedRef, string> fullNameProvider )
+        public static IEnumerable<IDependentItemRef> SetRefFullName( this IEnumerable<IDependentItemRef>? @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this;
+            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this ?? Array.Empty<IDependentItemRef>();
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace CK.Setup
         /// <returns>A collection of <see cref="IDependentItemGroupRef"/> whose FullName of named references may have changed.</returns>
         public static IEnumerable<IDependentItemGroupRef> SetRefFullName( this IEnumerable<IDependentItemGroupRef> @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this;
+            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this ?? Array.Empty<IDependentItemGroupRef>();
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace CK.Setup
         /// <returns>A collection of <see cref="IDependentItemContainerRef"/> whose FullName of named references may have changed.</returns>
         public static IEnumerable<IDependentItemContainerRef> SetRefFullName( this IEnumerable<IDependentItemContainerRef> @this, Func<IDependentItemNamedRef,string> fullNameProvider )
         {
-            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this;
+            return @this != null ? CallSetRefFullName( @this, fullNameProvider ) : @this ?? Array.Empty<IDependentItemContainerRef>();
         }
 
         /// <summary>
@@ -64,8 +64,7 @@ namespace CK.Setup
         /// <returns>The reference with an updated name.</returns>
         public static IDependentItemRef SetRefFullName( this IDependentItemRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
-            return r != null ? (IDependentItemRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+            return @this is IDependentItemNamedRef r ? r.SetFullName( fullNameProvider( r ) ) : @this;
         }
 
         /// <summary>
@@ -78,8 +77,7 @@ namespace CK.Setup
         /// <returns>The reference with an updated name.</returns>
         public static IDependentItemGroupRef SetRefFullName( this IDependentItemGroupRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
-            return r != null ? (IDependentItemGroupRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+            return @this is IDependentItemNamedRef r ? (IDependentItemGroupRef)r.SetFullName( fullNameProvider( r ) ) : @this;
         }
 
         /// <summary>
@@ -92,8 +90,7 @@ namespace CK.Setup
         /// <returns>The reference with an updated name.</returns>
         public static IDependentItemContainerRef SetRefFullName( this IDependentItemContainerRef @this, Func<IDependentItemNamedRef, string> fullNameProvider )
         {
-            IDependentItemNamedRef r = @this as IDependentItemNamedRef;
-            return r != null ? (IDependentItemContainerRef)r.SetFullName( fullNameProvider( r ) ) : @this;
+            return @this is IDependentItemNamedRef r ? (IDependentItemContainerRef)r.SetFullName( fullNameProvider( r ) ) : @this;
         }
 
         /// <summary>
@@ -103,8 +100,7 @@ namespace CK.Setup
         {
             foreach( var e in source )
             {
-                IDependentItemNamedRef named = e as IDependentItemNamedRef;
-                if( named != null )
+                if( e is IDependentItemNamedRef named )
                 {
                     string newName = fullNameProvider( named );
                     if( newName != null )
@@ -122,31 +118,22 @@ namespace CK.Setup
         /// </summary>
         class DirectRef
         {
-            public IDependentItem Item { get; protected set; }
+            public IDependentItem Item { get; }
+            public DirectRef( IDependentItem item ) => Item = item;
         }
 
-        class ItemRef : DirectRef, IDependentItemContainerRef
+        sealed class ItemRef : DirectRef, IDependentItemContainerRef
         {
-            public ItemRef( IDependentItem item )
-            {
-                Item = item;
-            }
+            public ItemRef( IDependentItem item ) : base( item ) {}
 
-            public string FullName
-            {
-                get { return Item.FullName; }
-            }
+            public string FullName => Item.FullName;
 
-            public bool Optional
-            {
-                get { return false; }
-            }
+            public bool Optional => false;
 
-            public override bool Equals( object obj )
+            public override bool Equals( object? obj )
             {
-                if( obj is IDependentItemRef )
+                if( obj is IDependentItemRef o )
                 {
-                    IDependentItemRef o = (IDependentItemRef)obj;
                     return !o.Optional && o.FullName == Item.FullName;
                 }
                 return false;
@@ -160,26 +147,16 @@ namespace CK.Setup
 
         class OptItemRef : DirectRef, IDependentItemContainerRef
         {
-            public OptItemRef( IDependentItem item )
-            {
-                Item = item;
-            }
+            public OptItemRef( IDependentItem item ) : base ( item ) { }
 
-            public string FullName
-            {
-                get { return Item.FullName; }
-            }
+            public string FullName => Item.FullName;
 
-            public bool Optional
-            {
-                get { return true; }
-            }
+            public bool Optional => true;
 
-            public override bool Equals( object obj )
+            public override bool Equals( object? obj )
             {
-                if( obj is IDependentItemRef )
+                if( obj is IDependentItemRef o )
                 {
-                    IDependentItemRef o = (IDependentItemRef)obj;
                     return Optional && o.FullName == Item.FullName;
                 }
                 return false;
@@ -198,11 +175,9 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItem"/>. Can be null.</param>
         /// <returns>A reference to the item. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemRef GetReference( this IDependentItem @this )
+        public static IDependentItemRef? GetReference( this IDependentItem? @this )
         {
-            IDependentItemRef r = @this as IDependentItemRef;
-            if( r == null ) r = @this != null ? new ItemRef( @this ) : null;
-            return r;
+            return @this is IDependentItemRef r ? r : @this != null ? new ItemRef( @this ) : null;
         }
 
         /// <summary>
@@ -210,11 +185,9 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItemGroup"/>. Can be null.</param>
         /// <returns>A reference to the group. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemGroupRef GetReference( this IDependentItemGroup @this )
+        public static IDependentItemGroupRef? GetReference( this IDependentItemGroup? @this )
         {
-            IDependentItemGroupRef r = @this as IDependentItemGroupRef;
-            if( r == null ) r = @this != null ? new ItemRef( @this ) : null;
-            return r;
+            return @this is IDependentItemGroupRef r ? r : @this != null ? new ItemRef( @this ) : null;
         }
 
         /// <summary>
@@ -222,11 +195,9 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItemContainer"/>. Can be null.</param>
         /// <returns>A reference to the container. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemContainerRef GetReference( this IDependentItemContainer @this )
+        public static IDependentItemContainerRef? GetReference( this IDependentItemContainer? @this )
         {
-            IDependentItemContainerRef r = @this as IDependentItemContainerRef;
-            if( r == null ) r = @this != null ? new ItemRef( @this ) : null;
-            return r;
+            return @this is IDependentItemContainerRef r ? r : @this != null ? new ItemRef( @this ) : null;
         }
 
         /// <summary>
@@ -235,7 +206,7 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItem"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItem)"/>).</param>
         /// <returns>A reference to the item that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemRef GetOptionalReference( this IDependentItem @this, bool optional = true )
+        public static IDependentItemRef? GetOptionalReference( this IDependentItem? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             return @this != null ? new OptItemRef( @this ) : null;
@@ -247,7 +218,7 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItemGroup"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItemGroup)"/>).</param>
         /// <returns>A reference to the group that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemGroupRef GetOptionalReference( this IDependentItemGroup @this, bool optional = true )
+        public static IDependentItemGroupRef? GetOptionalReference( this IDependentItemGroup? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             return @this != null ? new OptItemRef( @this ) : null;
@@ -259,7 +230,7 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItemContainer"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItemContainer)"/>).</param>
         /// <returns>A reference to the container that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemContainerRef GetOptionalReference( this IDependentItemContainer @this, bool optional = true )
+        public static IDependentItemContainerRef? GetOptionalReference( this IDependentItemContainer? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             return @this != null ? new OptItemRef( @this ) : null;
@@ -274,12 +245,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItemRef"/>. Can be null.</param>
         /// <returns>A non optional reference to the item.</returns>
-        public static IDependentItemRef GetReference( this IDependentItemRef @this )
+        public static IDependentItemRef? GetReference( this IDependentItemRef? @this )
         {
             if( @this != null && @this.Optional )
             {
-                DirectRef d = @this as DirectRef;
-                if( d != null ) return GetReference( d.Item );
+                if( @this is DirectRef d ) return GetReference( d.Item );
                 return new NamedDependentItemRef( @this.FullName );
             }
             return @this;
@@ -290,12 +260,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItemGroupRef"/>. Can be null.</param>
         /// <returns>A non optional reference to the referenced group.</returns>
-        public static IDependentItemGroupRef GetReference( this IDependentItemGroupRef @this )
+        public static IDependentItemGroupRef? GetReference( this IDependentItemGroupRef? @this )
         {
             if( @this != null && @this.Optional )
             {
-                DirectRef d = @this as DirectRef;
-                if( d != null ) return GetReference( (IDependentItemGroup)d.Item );
+                if( @this is DirectRef d ) return GetReference( (IDependentItemGroup)d.Item );
                 return new NamedDependentItemGroupRef( @this.FullName );
             }
             return @this;
@@ -306,12 +275,11 @@ namespace CK.Setup
         /// </summary>
         /// <param name="this">This <see cref="IDependentItemContainerRef"/>. Can be null.</param>
         /// <returns>A non optional reference to the referenced container.</returns>
-        public static IDependentItemContainerRef GetReference( this IDependentItemContainerRef @this )
+        public static IDependentItemContainerRef? GetReference( this IDependentItemContainerRef? @this )
         {
             if( @this != null && @this.Optional )
             {
-                DirectRef d = @this as DirectRef;
-                if( d != null ) return GetReference( (IDependentItemContainer)d.Item );
+                if( @this is DirectRef d ) return GetReference( (IDependentItemContainer)d.Item );
                 return new NamedDependentItemContainerRef( @this.FullName );
             }
             return @this;
@@ -323,12 +291,11 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItemRef"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItemRef)"/>).</param>
         /// <returns>A reference to the item that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemRef GetOptionalReference( this IDependentItemRef @this, bool optional = true )
+        public static IDependentItemRef? GetOptionalReference( this IDependentItemRef? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             if( @this == null || @this.Optional ) return @this;
-            DirectRef d = @this as DirectRef;
-            if( d != null ) return new OptItemRef( d.Item );
+            if( @this is DirectRef d ) return new OptItemRef( d.Item );
             return new NamedDependentItemRef( @this.FullName, true );
         }
 
@@ -338,12 +305,11 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItemGroupRef"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItemGroupRef)"/>).</param>
         /// <returns>A reference to the item that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemGroupRef GetOptionalReference( this IDependentItemGroupRef @this, bool optional = true )
+        public static IDependentItemGroupRef? GetOptionalReference( this IDependentItemGroupRef? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             if( @this == null || @this.Optional ) return @this;
-            DirectRef d = @this as DirectRef;
-            if( d != null ) return new OptItemRef( d.Item );
+            if( @this is DirectRef d ) return new OptItemRef( d.Item );
             return new NamedDependentItemGroupRef( @this.FullName, true );
         }
 
@@ -353,12 +319,11 @@ namespace CK.Setup
         /// <param name="this">This <see cref="IDependentItemContainerRef"/>. Can be null.</param>
         /// <param name="optional">False to obtain a non optional reference (same as calling <see cref="GetReference(IDependentItemContainerRef)"/>).</param>
         /// <returns>A reference to the item that is optional by default. Null if <paramref name="this"/> is null.</returns>
-        public static IDependentItemContainerRef GetOptionalReference( this IDependentItemContainerRef @this, bool optional = true )
+        public static IDependentItemContainerRef? GetOptionalReference( this IDependentItemContainerRef? @this, bool optional = true )
         {
             if( !optional ) return GetReference( @this );
             if( @this == null || @this.Optional ) return @this;
-            DirectRef d = @this as DirectRef;
-            if( d != null ) return new OptItemRef( d.Item );
+            if( @this is DirectRef d ) return new OptItemRef( d.Item );
             return new NamedDependentItemContainerRef( @this.FullName, true );
         }
 

@@ -39,24 +39,24 @@ namespace CK.Setup
         /// <summary>
         /// Gets the object returned by <see cref="IDependentItem.StartDependencySort"/> if any.
         /// </summary>
-        object StartValue { get; }
+        object? StartValue { get; }
 
         /// <summary>
         /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container"/>.
         /// If the actual <see cref="Container"/> is inherited through <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
-        ISortedItem ConfiguredContainer { get; }
+        ISortedItem? ConfiguredContainer { get; }
 
         /// <summary>
         /// Gets the container to which this item belongs.
         /// Use <see cref="HeadForGroup"/> to get its head.
         /// </summary>
-        ISortedItem Container { get; }
+        ISortedItem? Container { get; }
 
         /// <summary>
         /// Gets the Generalization of this item if it has one.
         /// </summary>
-        ISortedItem Generalization { get; }
+        ISortedItem? Generalization { get; }
 
         /// <summary>
         /// Whether this is the head of a group.
@@ -73,13 +73,13 @@ namespace CK.Setup
         /// <summary>
         /// Gets the head of the group if this item is a group (null otherwise).
         /// </summary>
-        ISortedItem HeadForGroup { get; }
+        ISortedItem? HeadForGroup { get; }
 
         /// <summary>
         /// Gets the group for which this item is the Head. 
         /// Null if this item is not a Head.
         /// </summary>
-        ISortedItem GroupForHead { get; }
+        ISortedItem? GroupForHead { get; }
 
         /// <summary>
         /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>

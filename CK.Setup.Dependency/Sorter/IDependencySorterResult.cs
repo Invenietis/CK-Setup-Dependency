@@ -12,13 +12,13 @@ namespace CK.Setup
         /// <summary>
         /// Non null if a cycle has been detected.
         /// </summary>
-        IReadOnlyList<ICycleExplainedElement> CycleDetected { get; }
+        IReadOnlyList<ICycleExplainedElement>? CycleDetected { get; }
 
         /// <summary>
         /// Gets the list of <see cref="ISortedItem"/>: null if <see cref="CycleDetected"/> is not null
         /// or <see cref="HasStartFatal"/> or <see cref="HasSevereStructureError"/> are true.
         /// </summary>
-        IReadOnlyList<ISortedItem> SortedItems { get; }
+        IReadOnlyList<ISortedItem>? SortedItems { get; }
 
         /// <summary>
         /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
@@ -74,7 +74,7 @@ namespace CK.Setup
         /// <summary>
         /// Gets a description of the detected cycle. Null if <see cref="CycleDetected"/> is null.
         /// </summary>
-        string CycleExplainedString { get; }
+        string? CycleExplainedString { get; }
 
         /// <summary>
         /// Gets a description of the required missing dependencies. 
@@ -86,7 +86,7 @@ namespace CK.Setup
         /// Gets a description of the required missing dependencies. 
         /// Null if no missing required dependency exists.
         /// </summary>
-        string RequiredMissingDependenciesExplained { get; }
+        string? RequiredMissingDependenciesExplained { get; }
 
         /// <summary>
         /// Number of items that have at least one invalid relation between itself and its container, its children, its generalization or its dependencies.

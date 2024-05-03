@@ -49,11 +49,10 @@ namespace CK.Setup
         {
             StringBuilder b = new StringBuilder();
             DependentItemKind kind = DependentItemKind.Item;
-            IDependentItemGroup g = @this as IDependentItemGroup;
+            IDependentItemGroup? g = @this as IDependentItemGroup;
             if( g != null )
             {
-                IDependentItemContainerTyped c = @this as IDependentItemContainerTyped;
-                if( c != null )
+                if( @this is IDependentItemContainerTyped c )
                 {
                     kind = c.ItemKind;
                 }

@@ -26,29 +26,29 @@ namespace CK.Setup
         /// Gets the container to which this item belongs thanks to its own configuration (<see cref="IDependentItem.Container"/>.
         /// If the actual <see cref="Container"/> is inherited through <see cref="Generalization"/>, this ConfiguredContainer is null.
         /// </summary>
-        new ISortedItem<T> ConfiguredContainer { get; }
+        new ISortedItem<T>? ConfiguredContainer { get; }
 
         /// <summary>
         /// Gets the container to which this item belongs.
         /// Use <see cref="HeadForGroup"/> to get its head.
         /// </summary>
-        new ISortedItem<T> Container { get; }
+        new ISortedItem<T>? Container { get; }
 
         /// <summary>
         /// Gets the Generalization of this item if it has one.
         /// </summary>
-        new ISortedItem<T> Generalization { get; }
+        new ISortedItem<T>? Generalization { get; }
 
         /// <summary>
         /// Gets the head of the group if this item is a group (null otherwise).
         /// </summary>
-        new ISortedItem<T> HeadForGroup { get; }
+        new ISortedItem<T>? HeadForGroup { get; }
 
         /// <summary>
         /// Gets the group for which this item is the Head. 
         /// Null if this item is not a Head.
         /// </summary>
-        new ISortedItem<T> GroupForHead { get; }
+        new ISortedItem<T>? GroupForHead { get; }
 
         /// <summary>
         /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>
