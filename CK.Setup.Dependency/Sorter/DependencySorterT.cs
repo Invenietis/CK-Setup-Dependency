@@ -916,7 +916,7 @@ namespace CK.Setup
                     #endregion
                     #region Handles Groups.
                     // Whatever it is, if it declares Groups, handle them.
-                    IEnumerable<IDependentItemGroupRef> groups;
+                    IEnumerable<IDependentItemGroupRef>? groups;
                     if( (groups = e.Groups) != null )
                     {
                         foreach( IDependentItemGroupRef groupRef in groups )
@@ -957,7 +957,7 @@ namespace CK.Setup
                     {
                         Debug.Assert( actualType != DependentItemKind.Item && g != null );
                         Debug.Assert( entry.HeadIfGroupOrContainer != null );
-                        IEnumerable<IDependentItemRef> children;
+                        IEnumerable<IDependentItemRef>? children;
                         if( (children = g.Children) != null )
                         {
                             IDependentItem? knownChild = alreadyRegisteredChild?.Item;

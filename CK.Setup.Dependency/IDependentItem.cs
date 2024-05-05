@@ -1,16 +1,5 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setup.Dependency\IDependentItem.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
 using CK.Core;
+using System.Collections.Generic;
 
 namespace CK.Setup
 {
@@ -36,7 +25,7 @@ namespace CK.Setup
         /// (but it is not mandatory as long as the <see cref="DependencySorter"/> is concerned: it will
         /// correctly handle all cases).
         /// </remarks>
-        IDependentItemContainerRef Container { get; }
+        IDependentItemContainerRef? Container { get; }
 
         /// <summary>
         /// Gets a reference to the item that generalizes this one. 
@@ -53,7 +42,7 @@ namespace CK.Setup
         /// considered as an item's attribute that is inherited by its specialized items.
         /// </para>
         /// </remarks>
-        IDependentItemRef Generalization { get; }
+        IDependentItemRef? Generalization { get; }
 
         /// <summary>
         /// Gets this item's dependencies. Can be null if no such dependency exists.
@@ -62,7 +51,7 @@ namespace CK.Setup
         /// When <see cref="IDependentItemRef.Optional"/> is true, if it is not found, this
         /// will not be an error (see <see cref="DependentItemIssue.MissingDependencies"/>).
         /// </remarks>
-        IEnumerable<IDependentItemRef> Requires { get; }
+        IEnumerable<IDependentItemRef>? Requires { get; }
 
         /// <summary>
         /// Gets the revert dependencies (an item can specify that it is itself required by another one). 
@@ -70,14 +59,14 @@ namespace CK.Setup
         /// as a reverted optional dependency).
         /// Can be null if no such dependency exists.
         /// </summary>
-        IEnumerable<IDependentItemRef> RequiredBy { get; }
+        IEnumerable<IDependentItemRef>? RequiredBy { get; }
 
         /// <summary>
         /// Gets the groups to which this item belongs. If one of these groups is a container, it must be 
         /// the only container of this item (otherwise it is an error).
         /// Can be null if the item is not in any group.
         /// </summary>
-        IEnumerable<IDependentItemGroupRef> Groups { get; }
+        IEnumerable<IDependentItemGroupRef>? Groups { get; }
 
         /// <summary>
         /// Allows the dependent item to prepare itself before ordering. The returned object (if any)
@@ -85,7 +74,7 @@ namespace CK.Setup
         /// </summary>
         /// <param name="m">Monitor that can be use to signal error. Any error or fatal logged wil stop the process.</param>
         /// <returns>Any object that has to be associated to this item and a <see cref="G:DependencySorter.OrderItems"/> call.</returns>
-        object StartDependencySort( IActivityMonitor m );
+        object? StartDependencySort( IActivityMonitor m );
     }
 }
 

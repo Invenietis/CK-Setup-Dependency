@@ -27,7 +27,7 @@ namespace CK.Setup
         /// Gets a list of <typeparamref name="T"/> that must participate to the 
         /// setup. Can be null if no such item exists.
         /// </summary>
-        IEnumerable<T> GetOtherItemsToRegister();
+        IEnumerable<T>? GetOtherItemsToRegister();
     }
 
     /// <summary>

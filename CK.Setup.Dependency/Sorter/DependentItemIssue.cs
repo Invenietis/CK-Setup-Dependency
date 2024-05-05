@@ -150,14 +150,17 @@ namespace CK.Setup
                 {
                     if( (StructureError & DependentItemStructureError.MissingNamedContainer) != 0 )
                     {
+                        Throw.DebugAssert( Item.Container != null );
                         monitor.Error( $"Missing container named '{Item.Container.FullName}'" );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingItemIsNotAContainer) != 0 )
                     {
+                        Throw.DebugAssert( Item.Container != null );
                         monitor.Error( $"Items's container named '{Item.Container.FullName}' is not a container." );
                     }
                     if( (StructureError & DependentItemStructureError.ExistingContainerAskedToNotBeAContainer) != 0 )
                     {
+                        Throw.DebugAssert( Item.Container != null );
                         monitor.Error( $"Items's container '{Item.Container.FullName}' dynamically states that it is actually not a container. (Did you forget to configure the ItemKind of the object? This can be done for instance with the attribute [StObj( ItemKind = DependentItemType.Container )].)" );
                     }
                     if( (StructureError & DependentItemStructureError.ContainerAskedToNotBeAGroupButContainsChildren) != 0 )
@@ -166,6 +169,7 @@ namespace CK.Setup
                     }
                     if( (StructureError & DependentItemStructureError.MissingGeneralization) != 0 )
                     {
+                        Throw.DebugAssert( Item.Generalization != null );
                         monitor.Error( $"Item '{Item.FullName}' requires '{Item.Generalization.FullName}' as its Generalization. The Generalization is missing." );
                     }
                     if( (StructureError & DependentItemStructureError.DeclaredGroupRefusedToBeAGroup) != 0 )

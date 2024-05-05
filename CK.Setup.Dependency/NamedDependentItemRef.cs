@@ -140,10 +140,7 @@ namespace CK.Setup
         /// Overridden to return the <see cref="FullName"/>.
         /// </summary>
         /// <returns>This <see cref="FullName"/>.</returns>
-        public override string ToString()
-        {
-            return FullName;
-        }
+        public override string ToString() => FullName;
 
     }
 }

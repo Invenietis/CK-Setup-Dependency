@@ -25,7 +25,7 @@ namespace CK.Setup
         /// <remarks>
         /// The <see cref="DependencySorter"/> uses this list to discover the original <see cref="IDependentItem"/> to order.
         /// </remarks>
-        IEnumerable<IDependentItemRef> Children { get; }
+        IEnumerable<IDependentItemRef>? Children { get; }
 
     }
 }

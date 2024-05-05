@@ -72,7 +72,7 @@ namespace CK.Setup
             return b.ToString();
         }
 
-        static StringBuilder AppendNames( this StringBuilder @this, IEnumerable<IDependentItemRef> e )
+        static StringBuilder AppendNames( this StringBuilder @this, IEnumerable<IDependentItemRef>? e )
         {
             if( e != null )
             {
@@ -89,7 +89,7 @@ namespace CK.Setup
             return @this;
         }
 
-        static StringBuilder AppendOneName( this StringBuilder @this, IDependentItemRef o )
+        static StringBuilder AppendOneName( this StringBuilder @this, IDependentItemRef? o )
         {
             if( o == null ) @this.Append( "(null)" );
             else
