@@ -24,7 +24,7 @@ namespace CK.Setup
         /// <param name="discoverers">An optional set of <see cref="IDependentItemDiscoverer"/> (can be null).</param>
         /// <param name="options">Options for advanced uses.</param>
         /// <returns>A <see cref="IDependencySorterResult"/>.</returns>
-        public static IDependencySorterResult OrderItems( IActivityMonitor monitor, IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer> discoverers, DependencySorterOptions? options = null )
+        public static IDependencySorterResult OrderItems( IActivityMonitor monitor, IEnumerable<IDependentItem> items, IEnumerable<IDependentItemDiscoverer>? discoverers, DependencySorterOptions? options = null )
         {
             return DependencySorter<IDependentItem>.OrderItems( monitor, items, discoverers, options );
         }
