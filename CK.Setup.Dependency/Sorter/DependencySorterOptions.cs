@@ -27,14 +27,14 @@ namespace CK.Setup
         /// Gets or sets a function that will be called with the list of items once all of them are registered.
         /// Duplicates has been removed.
         /// </summary>
-        public Action<IEnumerable<IDependentItem>> HookInput { get; set; }
+        public Action<IEnumerable<IDependentItem>>? HookInput { get; set; }
 
         /// <summary>
         /// Gets or sets a function that will be called when items have been sorted.
         /// The final <see cref="IDependencySorterResult"/> may not be successful (ie. <see cref="IDependencySorterResult.HasStructureError"/> may be true),
         /// but if a cycle has been detected, this hook is not called.
         /// </summary>
-        public Action<IEnumerable<ISortedItem>> HookOutput { get; set; }
+        public Action<IEnumerable<ISortedItem>>? HookOutput { get; set; }
     }
 
 }

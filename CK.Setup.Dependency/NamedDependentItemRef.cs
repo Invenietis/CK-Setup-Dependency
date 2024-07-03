@@ -29,7 +29,7 @@ namespace CK.Setup
         /// <param name="fullName">Full name of the object. May start with '?'.</param>
         public NamedDependentItemRef( string fullName )
         {
-            if( String.IsNullOrWhiteSpace( fullName ) ) throw new ArgumentException( "Must not be a not null nor empty nor whitespace string.", "fullName" );
+            Throw.CheckNotNullOrWhiteSpaceArgument( fullName );
             _fullName = fullName;
             _optional = false;
             if( fullName[0] == '?' )
@@ -116,11 +116,10 @@ namespace CK.Setup
         /// </summary>
         /// <param name="obj">The object to test.</param>
         /// <returns>True if the object is a <see cref="IDependentItemRef"/> with the same name and optionality.</returns>
-        public override bool Equals( object obj )
+        public override bool Equals( object? obj )
         {
-            if( obj is IDependentItemRef )
+            if( obj is IDependentItemRef o )
             {
-                IDependentItemRef o = (IDependentItemRef)obj;
                 return o.Optional == Optional && o.FullName == _fullName;
             }
             return false;
@@ -141,10 +140,7 @@ namespace CK.Setup
         /// Overridden to return the <see cref="FullName"/>.
         /// </summary>
         /// <returns>This <see cref="FullName"/>.</returns>
-        public override string ToString()
-        {
-            return FullName;
-        }
+        public override string ToString() => FullName;
 
     }
 }

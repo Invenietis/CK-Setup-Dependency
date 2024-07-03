@@ -30,7 +30,7 @@ namespace CK.Setup.Dependency.Tests
         {
             if( !OrderedFullNames( @this ).SequenceEqual( fullNames ) )
             {
-                Assert.Fail( "Expecting '{0}' but was '{1}'.", String.Join( ", ", fullNames ), String.Join( ", ", OrderedFullNames( @this ) ) );
+                Assert.Fail( $"Expecting '{String.Join( ", ", fullNames )}' but was '{String.Join( ", ", OrderedFullNames( @this ) )}'." );
             }
         }
 
@@ -48,7 +48,7 @@ namespace CK.Setup.Dependency.Tests
             var s2 = fullNames.Split( ',' ).OrderBy( Util.FuncIdentity );
             if( !s1.SequenceEqual( s2 ) )
             {
-                Assert.Fail( "Expecting '{0}' but was '{1}'.", String.Join( ", ", s2 ), String.Join( ", ", s1 ) );
+                Assert.Fail( $"Expecting '{String.Join( ", ", s2 )}' but was '{String.Join( ", ", s1 )}'." );
             }
         }
         

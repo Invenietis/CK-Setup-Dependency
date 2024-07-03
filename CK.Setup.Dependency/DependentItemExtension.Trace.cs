@@ -49,11 +49,10 @@ namespace CK.Setup
         {
             StringBuilder b = new StringBuilder();
             DependentItemKind kind = DependentItemKind.Item;
-            IDependentItemGroup g = @this as IDependentItemGroup;
+            IDependentItemGroup? g = @this as IDependentItemGroup;
             if( g != null )
             {
-                IDependentItemContainerTyped c = @this as IDependentItemContainerTyped;
-                if( c != null )
+                if( @this is IDependentItemContainerTyped c )
                 {
                     kind = c.ItemKind;
                 }
@@ -73,7 +72,7 @@ namespace CK.Setup
             return b.ToString();
         }
 
-        static StringBuilder AppendNames( this StringBuilder @this, IEnumerable<IDependentItemRef> e )
+        static StringBuilder AppendNames( this StringBuilder @this, IEnumerable<IDependentItemRef>? e )
         {
             if( e != null )
             {
@@ -90,7 +89,7 @@ namespace CK.Setup
             return @this;
         }
 
-        static StringBuilder AppendOneName( this StringBuilder @this, IDependentItemRef o )
+        static StringBuilder AppendOneName( this StringBuilder @this, IDependentItemRef? o )
         {
             if( o == null ) @this.Append( "(null)" );
             else

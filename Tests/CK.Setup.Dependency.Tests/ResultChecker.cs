@@ -88,7 +88,7 @@ namespace CK.Setup.Dependency.Tests
             if( o.IsGroupHead )
             {
                 Assert.That( o.Container == o.GroupForHead.Container, "The container is the same for a head and its associated group." );
-                Assert.That( o.Index < o.GroupForHead.Index, "{0} is before {1} (since {0} is the head of {1}).", o.FullName, o.GroupForHead.FullName );
+                Assert.That( o.Index < o.GroupForHead.Index, $"{o.FullName} is before {o.GroupForHead.FullName} (since {o.FullName} is the head of {o.GroupForHead.FullName})." );
                 
                 // Consider the head as its container (same test as below): the head must be contained in the container of our container if it exists.               
                 if( o.Item.Container != null )
@@ -109,7 +109,7 @@ namespace CK.Setup.Dependency.Tests
                 {
                     Assert.That( o.Generalization != null && o.Generalization.Item == o.Item.Generalization );
                     var gen = _byName[ o.Item.Generalization.FullName ];
-                    Assert.That( gen.Index < o.Index, "{0} is before {1} (since {1} specializes {0}).", gen.FullName, o.FullName );
+                    Assert.That( gen.Index < o.Index, $"{gen.FullName} is before {o.FullName} (since {o.FullName} specializes {gen.FullName})." );
                 }
             }
 
@@ -133,7 +133,7 @@ namespace CK.Setup.Dependency.Tests
             foreach( var invertReq in o.Item.RequiredBy )
             {
                 var after = _byName.GetValueOrDefault( invertReq.FullName, null );
-                if( after != null ) Assert.That( o.Index < after.Index, "{0} is before {1} (since {1} is required by {0}).", o.FullName, after.FullName );
+                if( after != null ) Assert.That( o.Index < after.Index, $"{o.FullName} is before {after.FullName} (since {after.FullName} is required by {o.FullName})." );
             }
         }
 
@@ -144,7 +144,7 @@ namespace CK.Setup.Dependency.Tests
                 foreach( var dep in requirements )
                 {
                     var before = Find( dep.Optional ? '?' + dep.FullName : dep.FullName );
-                    if( before != null ) Assert.That( before.Index < o.Index, "{0} is before {1} (since {1} requires {0}).", before.FullName, o.FullName );
+                    if( before != null ) Assert.That( before.Index < o.Index, $"{before.FullName} is before {o.FullName} (since {o.FullName} requires {before.FullName})." );
                 }
             }
         }
@@ -152,8 +152,8 @@ namespace CK.Setup.Dependency.Tests
         private static void CheckItemInContainer( ISortedItem o, ISortedItem container )
         {
             Assert.That( container != null, "Container necessarily exists." );
-            Assert.That( container.HeadForGroup.Index < o.Index, "{0} is before {1} (since {0} contains {1}).", container.HeadForGroup.FullName, o.FullName );
-            Assert.That( o.Index < container.Index, "{0} is before {1} (since {1} contains {0}).", o.FullName, container.FullName );
+            Assert.That( container.HeadForGroup.Index < o.Index, $"{container.HeadForGroup.FullName} is before {o.FullName} (since {container.HeadForGroup.FullName} contains {o.FullName})." );
+            Assert.That( o.Index < container.Index, $"{o.FullName} is before {container.FullName} (since {container.FullName} contains {o.FullName})." );
         }
 
         ISortedItem Find( string fullNameOpt )
