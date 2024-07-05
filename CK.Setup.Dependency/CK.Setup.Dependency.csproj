@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Description>Contains Dependent Items (with Containers and Groups) model and the ordering algorithm.</Description>
   </PropertyGroup>
   <ItemGroup>
