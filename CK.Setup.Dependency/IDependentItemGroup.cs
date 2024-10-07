@@ -11,21 +11,20 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace CK.Setup
+namespace CK.Setup;
+
+/// <summary>
+/// Collection part of the composite <see cref="IDependentItem"/>. 
+/// It only has to expose its <see cref="Children"/>.
+/// </summary>
+public interface IDependentItemGroup : IDependentItem
 {
     /// <summary>
-    /// Collection part of the composite <see cref="IDependentItem"/>. 
-    /// It only has to expose its <see cref="Children"/>.
+    /// Gets a list of children. Can be null or empty.
     /// </summary>
-    public interface IDependentItemGroup : IDependentItem
-    {
-        /// <summary>
-        /// Gets a list of children. Can be null or empty.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="DependencySorter"/> uses this list to discover the original <see cref="IDependentItem"/> to order.
-        /// </remarks>
-        IEnumerable<IDependentItemRef>? Children { get; }
+    /// <remarks>
+    /// The <see cref="DependencySorter"/> uses this list to discover the original <see cref="IDependentItem"/> to order.
+    /// </remarks>
+    IEnumerable<IDependentItemRef>? Children { get; }
 
-    }
 }
