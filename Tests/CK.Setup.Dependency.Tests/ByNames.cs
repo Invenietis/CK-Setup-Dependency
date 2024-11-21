@@ -13,113 +13,112 @@ using NUnit.Framework;
 using CK.Core;
 using static CK.Testing.MonitorTestHelper;
 
-namespace CK.Setup.Dependency.Tests
+namespace CK.Setup.Dependency.Tests;
+
+[TestFixture]
+public class ByNames
 {
-    [TestFixture]
-    public class ByNames
+    [Test]
+    public void NamesAreCaseSensitive()
     {
-        [Test]
-        public void NamesAreCaseSensitive()
+        var cA = new TestableContainer( "A", "⊐ b" );
+        var cB = new TestableContainer( "B" );
         {
-            var cA = new TestableContainer( "A", "⊐ b" );
-            var cB = new TestableContainer( "B" );
+            // Starting by CA.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
+            Assert.That( !r.IsComplete );
+            Assert.That( r.HasStructureError && r.StructureErrorCount == 1 );
+            ResultChecker.SimpleCheck( r );
+        }
+    }
+
+    [Test]
+    public void HomonymsByRequires()
+    {
+        using( TestableItem.IgnoreCheckCount() )
+        {
+            var item1 = new TestableItem( "A" );
+            var item2 = new TestableItem( "A" );
+            item2.Requires.Add( item1 );
             {
-                // Starting by CA.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, item2, item1 );
                 Assert.That( !r.IsComplete );
-                Assert.That( r.HasStructureError && r.StructureErrorCount == 1 );
+                Assert.That( r.HasStructureError );
                 ResultChecker.SimpleCheck( r );
             }
+            {
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, item1, item2 );
+                Assert.That( !r.IsComplete );
+                Assert.That( r.HasStructureError );
+                ResultChecker.SimpleCheck( r );
+            }
+            {
+                var r = DependencySorter.OrderItems( TestHelper.Monitor, item1 );
+                Assert.That( r.IsComplete );
+                ResultChecker.SimpleCheck( r );
+            }
+
         }
+    }
 
-        [Test]
-        public void HomonymsByRequires()
+    [Test]
+    public void Container_optional_reference()
+    {
+        var C = new TestableContainer( "C" );
+        var A = new TestableItem( "A" );
+        A.Container = new NamedDependentItemContainerRef( "C", true );
         {
-            using( TestableItem.IgnoreCheckCount() )
-            {
-                var item1 = new TestableItem( "A" );
-                var item2 = new TestableItem( "A" );
-                item2.Requires.Add( item1 );
-                {
-                    var r = DependencySorter.OrderItems( TestHelper.Monitor, item2, item1 );
-                    Assert.That( !r.IsComplete );
-                    Assert.That( r.HasStructureError );
-                    ResultChecker.SimpleCheck( r );
-                }
-                {
-                    var r = DependencySorter.OrderItems( TestHelper.Monitor, item1, item2 );
-                    Assert.That( !r.IsComplete );
-                    Assert.That( r.HasStructureError );
-                    ResultChecker.SimpleCheck( r );
-                }
-                {
-                    var r = DependencySorter.OrderItems( TestHelper.Monitor, item1 );
-                    Assert.That( r.IsComplete );
-                    ResultChecker.SimpleCheck( r );
-                }
-
-            }
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void Container_optional_reference()
         {
-            var C = new TestableContainer( "C" );
-            var A = new TestableItem( "A" );
-            A.Container = new NamedDependentItemContainerRef( "C", true );
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "A" ) );
-                ResultChecker.SimpleCheck( r );
-            }
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "A" ) );
+            ResultChecker.SimpleCheck( r );
         }
+    }
 
-        [Test]
-        public void Children_optional_reference()
+    [Test]
+    public void Children_optional_reference()
+    {
+        var C = new TestableContainer( "C" );
+        var A = new TestableItem( "A" );
+        C.Children.Add( new NamedDependentItemContainerRef( "A", true ) );
         {
-            var C = new TestableContainer( "C" );
-            var A = new TestableItem( "A" );
-            C.Children.Add( new NamedDependentItemContainerRef( "A", true ) );
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, C );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "C.Head", "C" ) );
-                ResultChecker.SimpleCheck( r );
-            }
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void Groups_optional_reference()
         {
-            var C = new TestableContainer( "C" );
-            var A = new TestableItem( "A" );
-            A.Groups.Add( new NamedDependentItemContainerRef( "C", true ) );
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, C );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "C.Head", "C" ) );
+            ResultChecker.SimpleCheck( r );
+        }
+    }
 
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "A" ) );
-                ResultChecker.SimpleCheck( r );
-            }
+    [Test]
+    public void Groups_optional_reference()
+    {
+        var C = new TestableContainer( "C" );
+        var A = new TestableItem( "A" );
+        A.Groups.Add( new NamedDependentItemContainerRef( "C", true ) );
+
+        {
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
+            ResultChecker.SimpleCheck( r );
+        }
+        {
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
+            Assert.That( r.IsComplete );
+            Assert.That( r.IsOrdered( "A" ) );
+            ResultChecker.SimpleCheck( r );
         }
     }
 }

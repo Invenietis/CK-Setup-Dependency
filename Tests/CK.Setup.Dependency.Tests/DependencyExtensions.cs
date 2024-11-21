@@ -12,49 +12,48 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Dependency.Tests
+namespace CK.Setup.Dependency.Tests;
+
+static class DependencyExtensions
 {
-    static class DependencyExtensions
+    public static IEnumerable<string> OrderedFullNames( this IDependencySorterResult @this )
     {
-        public static IEnumerable<string> OrderedFullNames( this IDependencySorterResult @this )
-        {
-            return @this.SortedItems.Select( o => o.FullName );
-        }
+        return @this.SortedItems.Select( o => o.FullName );
+    }
 
-        public static bool IsOrdered( this IDependencySorterResult @this, params string[] fullNames )
-        {
-            return OrderedFullNames( @this ).SequenceEqual( fullNames );
-        }
+    public static bool IsOrdered( this IDependencySorterResult @this, params string[] fullNames )
+    {
+        return OrderedFullNames( @this ).SequenceEqual( fullNames );
+    }
 
-        public static void AssertOrdered( this IDependencySorterResult @this, params string[] fullNames )
+    public static void AssertOrdered( this IDependencySorterResult @this, params string[] fullNames )
+    {
+        if( !OrderedFullNames( @this ).SequenceEqual( fullNames ) )
         {
-            if( !OrderedFullNames( @this ).SequenceEqual( fullNames ) )
-            {
-                Assert.Fail( $"Expecting '{String.Join( ", ", fullNames )}' but was '{String.Join( ", ", OrderedFullNames( @this ) )}'." );
-            }
+            Assert.Fail( $"Expecting '{String.Join( ", ", fullNames )}' but was '{String.Join( ", ", OrderedFullNames( @this ) )}'." );
         }
+    }
 
-        public static void CheckChildren( this IDependencySorterResult @this, string fullName, string childrenFullNames )
-        {
-            Check( @this, Find( @this, fullName ).Children, childrenFullNames );
-            // AllChildren in the current tests are always the same as Children.
-            // If a new test (that should be done, btw), breaks this, this should be rewritten.
-            Check( @this, Find( @this, fullName ).GetAllChildren(), childrenFullNames );
-        }
+    public static void CheckChildren( this IDependencySorterResult @this, string fullName, string childrenFullNames )
+    {
+        Check( @this, Find( @this, fullName ).Children, childrenFullNames );
+        // AllChildren in the current tests are always the same as Children.
+        // If a new test (that should be done, btw), breaks this, this should be rewritten.
+        Check( @this, Find( @this, fullName ).GetAllChildren(), childrenFullNames );
+    }
 
-        public static void Check( this IDependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )
+    public static void Check( this IDependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )
+    {
+        var s1 = items.Select( i => i.FullName ).OrderBy( Util.FuncIdentity );
+        var s2 = fullNames.Split( ',' ).OrderBy( Util.FuncIdentity );
+        if( !s1.SequenceEqual( s2 ) )
         {
-            var s1 = items.Select( i => i.FullName ).OrderBy( Util.FuncIdentity );
-            var s2 = fullNames.Split( ',' ).OrderBy( Util.FuncIdentity );
-            if( !s1.SequenceEqual( s2 ) )
-            {
-                Assert.Fail( $"Expecting '{String.Join( ", ", s2 )}' but was '{String.Join( ", ", s1 )}'." );
-            }
+            Assert.Fail( $"Expecting '{String.Join( ", ", s2 )}' but was '{String.Join( ", ", s1 )}'." );
         }
-        
-        public static ISortedItem Find( this IDependencySorterResult @this, string fullName )
-        {
-            return @this.SortedItems.FirstOrDefault( i => i.FullName == fullName );
-        }
+    }
+
+    public static ISortedItem Find( this IDependencySorterResult @this, string fullName )
+    {
+        return @this.SortedItems.FirstOrDefault( i => i.FullName == fullName );
     }
 }

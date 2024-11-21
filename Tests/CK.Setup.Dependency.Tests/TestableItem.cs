@@ -13,134 +13,132 @@ using System.Diagnostics;
 using NUnit.Framework;
 using CK.Core;
 
-namespace CK.Setup.Dependency.Tests
+namespace CK.Setup.Dependency.Tests;
+
+class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
 {
-    class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
+    string _fullName;
+    List<IDependentItemRef> _requires;
+    List<IDependentItemRef> _requiredBy;
+    List<IDependentItemGroupRef> _groups;
+    List<IDependentItem> _relatedItems;
+    int _startDependencySortCount;
+
+    static int _ignoreCheckedCount = 0;
+    public static IDisposable IgnoreCheckCount()
     {
-        string _fullName;
-        List<IDependentItemRef> _requires;
-        List<IDependentItemRef> _requiredBy;
-        List<IDependentItemGroupRef> _groups;
-        List<IDependentItem> _relatedItems;
-        int _startDependencySortCount;
+        ++_ignoreCheckedCount;
+        return Util.CreateDisposableAction( () => --_ignoreCheckedCount );
+    }
 
-        static int _ignoreCheckedCount = 0;
-        public static IDisposable IgnoreCheckCount()
-        {
-            ++_ignoreCheckedCount;
-            return Util.CreateDisposableAction( () => --_ignoreCheckedCount );
-        }
+    public TestableItem( string fullName, params object[] content )
+    {
+        _requires = new List<IDependentItemRef>();
+        _requiredBy = new List<IDependentItemRef>();
+        _groups = new List<IDependentItemGroupRef>();
+        FullName = fullName;
+        if( content != null ) Add( content );
+        if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
+    }
 
-        public TestableItem( string fullName, params object[] content )
+    public virtual void Add( params object[] content )
+    {
+        if( content == null ) return;
+        foreach( object o in content )
         {
-            _requires = new List<IDependentItemRef>();
-            _requiredBy = new List<IDependentItemRef>();
-            _groups = new List<IDependentItemGroupRef>();
-            FullName = fullName;
-            if( content != null ) Add( content );
-            if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
-        }
-
-        public virtual void Add( params object[] content )
-        {
-            if( content == null ) return;
-            foreach( object o in content )
+            if( o != null && o is string )
             {
-                if( o != null && o is string )
+                string dep = (string)o;
+                if( !HandleItemString( dep ) )
                 {
-                    string dep = (string)o;
-                    if( !HandleItemString( dep ) )
-                    {
-                        throw new ArgumentException( "Only RequiredBy (↽), Requires (⇀), GeneralizedBy (↟), ElementOfContainer (⊏) and ElementOf (∈) are supported." );
-                    }
+                    throw new ArgumentException( "Only RequiredBy (↽), Requires (⇀), GeneralizedBy (↟), ElementOfContainer (⊏) and ElementOf (∈) are supported." );
                 }
             }
-        }
-
-        protected bool HandleItemString( string dep )
-        {
-            if( dep[0] == CycleExplainedElement.RequiredBy ) // ↽
-            {
-                _requiredBy.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
-            }
-            else if( dep[0] == CycleExplainedElement.Requires ) // ⇀
-            {
-                _requires.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
-            }
-            else if( dep[0] == CycleExplainedElement.ElementOfContainer ) // ⊏
-            {
-                Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
-            }
-            else if( dep[0] == CycleExplainedElement.ElementOf ) // ∈
-            {
-                _groups.Add( new NamedDependentItemGroupRef( dep.Substring( 1 ).Trim() ) );
-            }
-            else if( dep[0] == CycleExplainedElement.GeneralizedBy ) // ↟
-            {
-                Generalization = new NamedDependentItemRef( dep.Substring( 1 ).Trim() );
-            }
-            else
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public IDependentItemContainerRef Container { get; set; }
-
-        public IDependentItemRef Generalization { get; set; }
-
-        public void CheckStartDependencySortCountAndReset()
-        {
-            if( _startDependencySortCount != -1 )
-            {
-                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
-                _startDependencySortCount = 0;
-            }
-        }
-
-        public string FullName 
-        {
-            get 
-            {
-                if( _startDependencySortCount != -1 )
-                {
-                    Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), $"StartDependencySort must have been called once and only once ({_fullName})." );
-                }
-                return _fullName; 
-            }
-            set { _fullName = value; } 
-        }
-
-        public IList<IDependentItemRef> Requires => _requires; 
-
-        public IList<IDependentItemRef> RequiredBy => _requiredBy; 
-
-        public IList<IDependentItemGroupRef> Groups => _groups; 
-
-        IEnumerable<IDependentItemRef> IDependentItem.Requires => _requires; 
-
-        IEnumerable<IDependentItemRef> IDependentItem.RequiredBy => _requiredBy;
-
-        IEnumerable<IDependentItemGroupRef> IDependentItem.Groups => _groups; 
-
-        public IList<IDependentItem> RelatedItems => _relatedItems ?? (_relatedItems = new List<IDependentItem>());
-
-        IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
-        
-        public override string ToString() => FullName;
-        
-        bool IDependentItemRef.Optional => false; 
-
-        object IDependentItem.StartDependencySort( IActivityMonitor m )
-        {
-            if( _startDependencySortCount != -1 )
-            {
-                Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
-                ++_startDependencySortCount;
-            }
-            return _startDependencySortCount;
         }
     }
 
+    protected bool HandleItemString( string dep )
+    {
+        if( dep[0] == CycleExplainedElement.RequiredBy ) // ↽
+        {
+            _requiredBy.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
+        }
+        else if( dep[0] == CycleExplainedElement.Requires ) // ⇀
+        {
+            _requires.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
+        }
+        else if( dep[0] == CycleExplainedElement.ElementOfContainer ) // ⊏
+        {
+            Container = new NamedDependentItemContainerRef( dep.Substring( 1 ).Trim() );
+        }
+        else if( dep[0] == CycleExplainedElement.ElementOf ) // ∈
+        {
+            _groups.Add( new NamedDependentItemGroupRef( dep.Substring( 1 ).Trim() ) );
+        }
+        else if( dep[0] == CycleExplainedElement.GeneralizedBy ) // ↟
+        {
+            Generalization = new NamedDependentItemRef( dep.Substring( 1 ).Trim() );
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public IDependentItemContainerRef Container { get; set; }
+
+    public IDependentItemRef Generalization { get; set; }
+
+    public void CheckStartDependencySortCountAndReset()
+    {
+        if( _startDependencySortCount != -1 )
+        {
+            Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+            _startDependencySortCount = 0;
+        }
+    }
+
+    public string FullName
+    {
+        get
+        {
+            if( _startDependencySortCount != -1 )
+            {
+                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), $"StartDependencySort must have been called once and only once ({_fullName})." );
+            }
+            return _fullName;
+        }
+        set { _fullName = value; }
+    }
+
+    public IList<IDependentItemRef> Requires => _requires;
+
+    public IList<IDependentItemRef> RequiredBy => _requiredBy;
+
+    public IList<IDependentItemGroupRef> Groups => _groups;
+
+    IEnumerable<IDependentItemRef> IDependentItem.Requires => _requires;
+
+    IEnumerable<IDependentItemRef> IDependentItem.RequiredBy => _requiredBy;
+
+    IEnumerable<IDependentItemGroupRef> IDependentItem.Groups => _groups;
+
+    public IList<IDependentItem> RelatedItems => _relatedItems ?? (_relatedItems = new List<IDependentItem>());
+
+    IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
+
+    public override string ToString() => FullName;
+
+    bool IDependentItemRef.Optional => false;
+
+    object IDependentItem.StartDependencySort( IActivityMonitor m )
+    {
+        if( _startDependencySortCount != -1 )
+        {
+            Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
+            ++_startDependencySortCount;
+        }
+        return _startDependencySortCount;
+    }
 }

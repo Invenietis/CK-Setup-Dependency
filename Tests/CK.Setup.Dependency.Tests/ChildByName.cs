@@ -14,158 +14,157 @@ using CK.Core;
 using static CK.Testing.MonitorTestHelper;
 
 
-namespace CK.Setup.Dependency.Tests
+namespace CK.Setup.Dependency.Tests;
+
+[TestFixture]
+public class ChildByName
 {
-    [TestFixture]
-    public class ChildByName
+    [Test]
+    public void JustContainers()
     {
-        [Test]
-        public void JustContainers()
+        var cB = new TestableContainer( "CB", "⊐ CA" );
+        var cA = new TestableContainer( "CA" );
         {
-            var cB = new TestableContainer( "CB", "⊐ CA" );
-            var cA = new TestableContainer( "CA" );
-            {
-                // Starting by CA.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                // Starting by CB.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, cA );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
+            // Starting by CA.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void SomeItems()
         {
-            var cB = new TestableContainer( "CB", "⊐ OB" );
-            var oB = new TestableItem( "OB" );
-            {
-                // Starting with the Container.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "OB", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                // Starting with the Item.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, cB );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "OB", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
-            var cA = new TestableContainer( "CA", "⊐ OA" );
-            cB.Add( "⊐ CA" );
-            var oA = new TestableItem( "OA" );
-            {
-                // Starting with the Containers.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB, cA, oA );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
-            {
-                // Starting with the Items.
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, oA, cB, cA );
-                Assert.That( r.IsComplete );
-                r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
-                ResultChecker.SimpleCheck( r );
-            }
+            // Starting by CB.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, cA );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
+            ResultChecker.SimpleCheck( r );
         }
+    }
 
-        [Test]
-        public void MissingChild()
+    [Test]
+    public void SomeItems()
+    {
+        var cB = new TestableContainer( "CB", "⊐ OB" );
+        var oB = new TestableItem( "OB" );
         {
-            var cB = new TestableContainer( "CB", "⊐ CA" );
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB );
-                Assert.That( r.IsComplete, Is.False );
-                r.AssertOrdered( "CB.Head", "CB" );
-                Assert.That( r.HasStructureError, Is.True );
-                Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
-                Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
-                Assert.That( r.ItemIssues[0].MissingChildren.Single(), Is.EqualTo( "CA" ) );
-                ResultChecker.SimpleCheck( r );
-            }
+            // Starting with the Container.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "OB", "CB" );
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void ExtraneousContainer()
         {
-            var childOfCB2 = new TestableItem( "ChildOfCB2" );
-            var cB1 = new TestableContainer( "CB1", "⊐ ChildOfCB2" );
-            var cB2 = new TestableContainer( "CB2", childOfCB2 );
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2 );
-                Assert.That( r.IsComplete, Is.False );
-                r.AssertOrdered( "CB1.Head", "CB2.Head", "CB1", "ChildOfCB2", "CB2" );
-                Assert.That( r.HasStructureError, Is.True );
-                Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
-
-                var issue = r.ItemIssues.Single( i => i.Item == childOfCB2 );
-                Assert.That( issue.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
-                Assert.That( issue.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
-                
-                ResultChecker.SimpleCheck( r );
-            }
+            // Starting with the Item.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, cB );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "OB", "CB" );
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void MultipleStructureErrors_with_homonym_prevents_the_graph_ordering()
+        var cA = new TestableContainer( "CA", "⊐ OA" );
+        cB.Add( "⊐ CA" );
+        var oA = new TestableItem( "OA" );
         {
-            var childOfCB2 = new TestableItem( "ChildOfCB2" );
-            var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
-            var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
-            var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
-            // This "discovers" an homonym.
-            cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
+            // Starting with the Containers.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB, cA, oA );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
+            ResultChecker.SimpleCheck( r );
+        }
+        {
+            // Starting with the Items.
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, oA, cB, cA );
+            Assert.That( r.IsComplete );
+            r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
+            ResultChecker.SimpleCheck( r );
+        }
+    }
+
+    [Test]
+    public void MissingChild()
+    {
+        var cB = new TestableContainer( "CB", "⊐ CA" );
+        {
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB );
+            Assert.That( r.IsComplete, Is.False );
+            r.AssertOrdered( "CB.Head", "CB" );
+            Assert.That( r.HasStructureError, Is.True );
+            Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
+            Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
+            Assert.That( r.ItemIssues[0].MissingChildren.Single(), Is.EqualTo( "CA" ) );
+            ResultChecker.SimpleCheck( r );
+        }
+    }
+
+    [Test]
+    public void ExtraneousContainer()
+    {
+        var childOfCB2 = new TestableItem( "ChildOfCB2" );
+        var cB1 = new TestableContainer( "CB1", "⊐ ChildOfCB2" );
+        var cB2 = new TestableContainer( "CB2", childOfCB2 );
+        {
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2 );
+            Assert.That( r.IsComplete, Is.False );
+            r.AssertOrdered( "CB1.Head", "CB2.Head", "CB1", "ChildOfCB2", "CB2" );
+            Assert.That( r.HasStructureError, Is.True );
+            Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
+
+            var issue = r.ItemIssues.Single( i => i.Item == childOfCB2 );
+            Assert.That( issue.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
+            Assert.That( issue.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
+
+            ResultChecker.SimpleCheck( r );
+        }
+    }
+
+    [Test]
+    public void MultipleStructureErrors_with_homonym_prevents_the_graph_ordering()
+    {
+        var childOfCB2 = new TestableItem( "ChildOfCB2" );
+        var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
+        var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
+        var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
+        // This "discovers" an homonym.
+        cB3.RelatedItems.Add( new TestableItem( "CB1" ) );
+        var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2, cB3 );
+        Assert.That( r.IsComplete, Is.False );
+        Assert.That( r.HasSevereStructureError, Is.True );
+        Assert.That( r.SortedItems, Is.Null );
+        Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
+        Assert.That( r.ItemIssues.SelectMany( i => i.Homonyms ).Count(), Is.EqualTo( 1 ) );
+    }
+
+    [Test]
+    public void MultipleStructureErrors()
+    {
+        var childOfCB2 = new TestableItem( "ChildOfCB2" );
+        var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
+        var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
+        var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
+        {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2, cB3 );
             Assert.That( r.IsComplete, Is.False );
-            Assert.That( r.HasSevereStructureError, Is.True );
-            Assert.That( r.SortedItems, Is.Null );
+            r.AssertOrdered( "CB1.Head", "CB2.Head", "CB3.Head", "CB1", "CB3", "ChildOfCB2", "CB2" );
+            Assert.That( r.HasStructureError, Is.True );
             Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
-            Assert.That( r.ItemIssues.SelectMany( i => i.Homonyms ).Count(), Is.EqualTo( 1 ) );
+
+            var issue1 = r.ItemIssues.Single( i => i.Item == cB1 );
+            Assert.That( issue1.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
+            Assert.That( issue1.MissingChildren.Single(), Is.EqualTo( "MissingChild" ) );
+
+            var issue2 = r.ItemIssues.Single( i => i.Item == cB2 );
+            Assert.That( issue2.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild | DependentItemStructureError.MissingNamedContainer | DependentItemStructureError.MissingDependency ) );
+            Assert.That( issue2.MissingChildren.Single(), Is.EqualTo( "MissingChild" ) );
+            Assert.That( issue2.MissingDependencies.Single(), Is.EqualTo( "MissingDependency" ) );
+
+            var issue3 = r.ItemIssues.Single( i => i.Item == cB3 );
+            Assert.That( issue3.StructureError, Is.EqualTo( DependentItemStructureError.ExistingItemIsNotAContainer | DependentItemStructureError.MissingDependency ) );
+            Assert.That( issue3.MissingDependencies.Single(), Is.EqualTo( "MissingDependency" ) );
+
+            var issue4 = r.ItemIssues.Single( i => i.Item == childOfCB2 );
+            Assert.That( issue4.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
+            Assert.That( issue4.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
+
+            ResultChecker.SimpleCheck( r );
         }
-
-        [Test]
-        public void MultipleStructureErrors()
-        {
-            var childOfCB2 = new TestableItem( "ChildOfCB2" );
-            var cB1 = new TestableContainer( "CB1", "⊐ MissingChild", "⊐ ChildOfCB2" );
-            var cB2 = new TestableContainer( "CB2", "⊐ MissingChild", "⊏ MissingContainer", "⇀ MissingDependency", childOfCB2 );
-            var cB3 = new TestableContainer( "CB3", "⊏ ChildOfCB2", "⇀ MissingDependency" );
-            {
-                var r = DependencySorter.OrderItems( TestHelper.Monitor, cB1, cB2, cB3 );
-                Assert.That( r.IsComplete, Is.False );
-                r.AssertOrdered( "CB1.Head", "CB2.Head", "CB3.Head", "CB1", "CB3", "ChildOfCB2", "CB2" );
-                Assert.That( r.HasStructureError, Is.True );
-                Assert.That( r.ItemIssues.Count, Is.EqualTo( 4 ) );
-                
-                var issue1 = r.ItemIssues.Single( i => i.Item == cB1 );
-                Assert.That( issue1.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
-                Assert.That( issue1.MissingChildren.Single(), Is.EqualTo( "MissingChild" ) );
-                
-                var issue2 = r.ItemIssues.Single( i => i.Item == cB2 );
-                Assert.That( issue2.StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild | DependentItemStructureError.MissingNamedContainer | DependentItemStructureError.MissingDependency ) );
-                Assert.That( issue2.MissingChildren.Single(), Is.EqualTo( "MissingChild" ) );
-                Assert.That( issue2.MissingDependencies.Single(), Is.EqualTo( "MissingDependency" ) );
-
-                var issue3 = r.ItemIssues.Single( i => i.Item == cB3 );
-                Assert.That( issue3.StructureError, Is.EqualTo( DependentItemStructureError.ExistingItemIsNotAContainer | DependentItemStructureError.MissingDependency ) );
-                Assert.That( issue3.MissingDependencies.Single(), Is.EqualTo( "MissingDependency" ) );
-
-                var issue4 = r.ItemIssues.Single( i => i.Item == childOfCB2 );
-                Assert.That( issue4.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
-                Assert.That( issue4.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
-
-                ResultChecker.SimpleCheck( r );
-            }
-        }
-
     }
+
 }
