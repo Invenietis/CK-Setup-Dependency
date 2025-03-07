@@ -84,7 +84,9 @@ public interface ISortedItem
     /// <summary>
     /// Gets a clean set of requirements for the item. Combines direct <see cref="IDependentItem.Requires"/>
     /// and <see cref="IDependentItem.RequiredBy"/> declared by existing other items without any duplicates.
-    /// Defaults to an empty enumerable.
+    /// <para>
+    /// This doesn't contain transitive dependencies.
+    /// </para>
     /// Requirement to the <see cref="IDependentItem.Generalization"/> is always removed.
     /// Requirements to any Container are removed when <see cref="DependencySorterOptions.SkipDependencyToContainer"/> is true.
     /// </summary>

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using CK.Core;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CK.Setup;
 
@@ -44,7 +45,7 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
             SortedItems = result;
             _cycle = null;
         }
-        ItemIssues = itemIssues != null && itemIssues.Count > 0 ? itemIssues : (IReadOnlyList<DependentItemIssue>)Array.Empty<DependentItemIssue>();
+        ItemIssues = itemIssues != null && itemIssues.Count > 0 ? itemIssues : Array.Empty<DependentItemIssue>();
         _requiredMissingIsError = true;
         _itemIssueWithStructureErrorCount = -1;
     }
@@ -121,10 +122,7 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
     /// True if at least one relation between an item and its container is invalid (true when <see cref="HasRequiredMissing"/> is 
     /// true if <see cref="ConsiderRequiredMissingAsStructureError"/> is true).
     /// </summary>
-    public bool HasStructureError
-    {
-        get { return StructureErrorCount > 0; }
-    }
+    public bool HasStructureError => StructureErrorCount > 0;
 
     /// <summary>
     /// Number of items that have at least one invalid relation between itself and its container, its children, its generalization or its dependencies.
@@ -156,10 +154,8 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
     /// must be 0): <see cref="SortedItems"/> can be exploited.
     /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
     /// </summary>
-    public bool IsComplete
-    {
-        get { return CycleDetected == null && !HasStructureError && !HasStartFatal && StartErrorCount == 0; }
-    }
+    [MemberNotNullWhen( true, nameof( SortedItems ) )]
+    public bool IsComplete => CycleDetected == null && !HasStructureError && !HasStartFatal && StartErrorCount == 0;
 
     /// <inheritdoc />
     public string? CycleExplainedString => CycleDetected != null ? String.Join( " ", CycleDetected ) : null;

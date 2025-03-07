@@ -12,6 +12,8 @@ using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using static CK.Testing.MonitorTestHelper;
+using FluentAssertions;
+using System.Numerics;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -137,6 +139,76 @@ public class ContainerDependencies
         pAModel.RequiredBy.Add( pA );
         pAModel.RequiredBy.Add( pBModel );
         testAndRestore();
+    }
+
+    [TestCase( true, true )]
+    [TestCase( false, true )]
+    [TestCase( true, false )]
+    [TestCase( false, false )]
+    public void Requires_and_RequiredBy_on_containers( bool reverseName, bool revertReg )
+    {
+        var pA = new TestableContainer( "A", "↽B" );
+        var pB = new TestableContainer( "B" );
+        var pC = new TestableContainer( "C", "⇀B", "↽E" ); // E is duplicate RequiredBy. 
+        var pD = new TestableContainer( "D", "⇀C", "↽E", "⇀B" ); // B is duplicate Requires.
+        var pE = new TestableContainer( "E" );
+
+        IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
+        if( revertReg ) reg = reg.Reverse();
+        var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.AssertOrdered( "A.Head", "A", "B.Head", "B", "C.Head", "C", "D.Head", "D", "E.Head", "E" );
+        Throw.DebugAssert( r.SortedItems != null );
+        r.SortedItems.Single( s => s.FullName == "A" ).Requires.Should().BeEmpty();
+        r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["A"] );
+        r.SortedItems.Single( s => s.FullName == "C" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["B"] );
+        r.SortedItems.Single( s => s.FullName == "D" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["C"] );
+        r.SortedItems.Single( s => s.FullName == "E" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["D"] );
+    }
+
+    [TestCase( true, true )]
+    [TestCase( false, true )]
+    [TestCase( true, false )]
+    [TestCase( false, false )]
+    public void Requires_and_RequiredBy_on_items( bool reverseName, bool revertReg )
+    {
+        var pA = new TestableItem( "A", "↽B" );
+        var pB = new TestableItem( "B" );
+        var pC = new TestableItem( "C", "⇀B", "↽E" ); // E is duplicate RequiredBy.
+        var pD = new TestableItem( "D", "⇀C", "↽E", "⇀B" ); // B is duplicate Requires.
+        var pE = new TestableItem( "E" );
+
+        IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
+        if( revertReg ) reg = reg.Reverse();
+        var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.AssertOrdered( "A", "B", "C", "D", "E" );
+        r.SortedItems.Single( s => s.FullName == "A" ).Requires.Select( r => r.FullName ).Should().BeEmpty();
+        r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["A"] );
+        r.SortedItems.Single( s => s.FullName == "C" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["B"] );
+        r.SortedItems.Single( s => s.FullName == "D" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["C"] );
+        r.SortedItems.Single( s => s.FullName == "E" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["D"] );
+    }
+
+    [TestCase( true, true )]
+    [TestCase( false, true )]
+    [TestCase( true, false )]
+    [TestCase( false, false )]
+    public void Requires_and_RequiredBy_on_mix( bool reverseName, bool revertReg )
+    {
+        var pA = new TestableItem( "A", "↽B" );
+        var pB = new TestableContainer( "B" );
+        var pC = new TestableItem( "C", "⇀B", "↽E" ); // E is duplicate RequiredBy.
+        var pD = new TestableContainer( "D", "⇀C", "↽E", "⇀B" ); // B is duplicate Requires.
+        var pE = new TestableItem( "E" );
+
+        IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
+        if( revertReg ) reg = reg.Reverse();
+        var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.SortedItems.Where( s => !s.IsGroupHead ).Select( s => s.FullName ).Concatenate().Should().Be( "A, B, C, D, E" );
+        r.SortedItems.Single( s => s.FullName == "A" ).Requires.Select( r => r.FullName ).Should().BeEmpty();
+        r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["A"] );
+        r.SortedItems.Single( s => s.FullName == "C" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["B"] );
+        r.SortedItems.Single( s => s.FullName == "D" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["C"] );
+        r.SortedItems.Single( s => s.FullName == "E" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["D"] );
     }
 
     [Test]
