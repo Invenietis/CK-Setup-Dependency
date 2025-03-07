@@ -53,7 +53,7 @@ public class ActorZoneTests
                 sqlDatabaseDefault, basicPackage, basicActor, basicGroup, zonePackage, zoneGroup, securityZone );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "SqlDatabaseDefault.Head", "BasicPackage.Head", "BasicActor", "BasicGroup", "BasicPackage", "ZonePackage.Head", "SecurityZone", "ZoneGroup", "ZonePackage", "SqlDatabaseDefault" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "BasicPackage", "BasicActor,BasicGroup" );
             r.CheckChildren( "ZonePackage", "ZoneGroup,SecurityZone" );
             r.CheckChildren( "SqlDatabaseDefault", "BasicPackage,BasicActor,BasicGroup,ZonePackage,ZoneGroup,SecurityZone" );

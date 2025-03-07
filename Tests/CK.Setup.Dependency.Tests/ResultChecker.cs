@@ -31,7 +31,7 @@ class ResultChecker
         foreach( string s in fullNames ) Check( s );
     }
 
-    public static void SimpleCheck( IDependencySorterResult r )
+    public static void SimpleCheckAndReset( IDependencySorterResult r )
     {
         if( r.SortedItems != null )
         {
@@ -41,8 +41,10 @@ class ResultChecker
             }
             if( r.SortedItems.Count > 0 )
             {
-                var ranks = r.SortedItems.Select( s => s.Rank ).Distinct().OrderBy( Util.FuncIdentity ).ToList();
-                Assert.That( ranks.Count == ranks.Last() );
+                var ranks = r.SortedItems.Select( s => s.Rank );
+                Throw.Assert( ranks.IsSortedLarge() );
+                var distinctRanks = ranks.Distinct().Order().ToList();
+                Assert.That( distinctRanks.Count == distinctRanks.Last() );
             }
         }
         CheckMissingInvariants( r );
@@ -81,7 +83,9 @@ class ResultChecker
 
     void Check( object sortedItemOrFullName )
     {
-        ISortedItem o = sortedItemOrFullName is ISortedItem ? (ISortedItem)sortedItemOrFullName : Find( (string)sortedItemOrFullName );
+        ISortedItem o = sortedItemOrFullName is ISortedItem
+                            ? (ISortedItem)sortedItemOrFullName
+                            : Find( (string)sortedItemOrFullName );
         if( o == null ) return;
 
         // If Head, then we check the head/container order and Requires and then we stop.
@@ -117,8 +121,10 @@ class ResultChecker
         if( o.Item.Container != null )
         {
             ISortedItem container = Find( o.Item.Container.FullName );
-            Assert.That( container != null && container.ItemKind == DependentItemKind.Container );
+            Throw.Assert( container != null && container.ItemKind == DependentItemKind.Container );
             CheckItemInContainer( o, container );
+            // ISortedItem.Requires contains the Requires and the RequiredBy from others.
+            CheckRequires( o, o.Requires.Select( r => new NamedDependentItemRef( r.Item.FullName ) ) );
         }
 
         if( o.ItemKind != DependentItemKind.Item )

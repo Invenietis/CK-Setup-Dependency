@@ -26,7 +26,7 @@ public class ContainerDynamicallyTyped
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
                 r.AssertOrdered( "C" );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
         }
         {
@@ -34,7 +34,7 @@ public class ContainerDynamicallyTyped
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
                 r.AssertOrdered( "C.Head", "C" );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
         }
     }

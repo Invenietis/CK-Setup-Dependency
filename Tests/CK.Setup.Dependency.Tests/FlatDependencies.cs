@@ -30,7 +30,7 @@ public class FlatDependencies
         Assert.That( r.CycleDetected == null );
         Assert.That( r.ItemIssues, Is.Empty );
         Assert.That( r.SortedItems, Is.Empty );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -43,7 +43,7 @@ public class FlatDependencies
         Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
         Assert.That( r.SortedItems[0].Item, Is.SameAs( oneItem ) );
         new ResultChecker( r ).CheckRecurse( "Test" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -68,7 +68,7 @@ public class FlatDependencies
 
         r.ConsiderRequiredMissingAsStructureError = true;
         new ResultChecker( r ).CheckRecurse( "Test" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -84,7 +84,7 @@ public class FlatDependencies
         Assert.That( r.SortedItems[1].Item.FullName, Is.EqualTo( "AutoDiscovered" ) );
 
         new ResultChecker( r ).CheckRecurse( "Test", "AutoDiscovered" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -100,7 +100,7 @@ public class FlatDependencies
         Assert.That( r.SortedItems[1].Item, Is.SameAs( oneItem ) );
 
         new ResultChecker( r ).CheckRecurse( "Test", "AutoDiscovered" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -117,7 +117,7 @@ public class FlatDependencies
             Assert.That( r.SortedItems[1].Item, Is.SameAs( i2 ) );
 
             new ResultChecker( r ).CheckRecurse( "Base", "User" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Allowing duplicates (and reversing initial order).
@@ -129,7 +129,7 @@ public class FlatDependencies
             Assert.That( r.SortedItems[1].Item, Is.SameAs( i2 ) );
 
             new ResultChecker( r ).CheckRecurse( "Base", "User" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -144,7 +144,7 @@ public class FlatDependencies
         Assert.That( r.ItemIssues[0].Item, Is.SameAs( i1 ) );
         Assert.That( r.ItemIssues[0].Homonyms, Is.EquivalentTo( new[] { i2 } ) );
 
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -167,7 +167,7 @@ public class FlatDependencies
         Assert.That( r.SortedItems[4].Item, Is.SameAs( i5 ) );
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "MCulture", "Appli" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -191,7 +191,7 @@ public class FlatDependencies
         // "Ordering is deterministic: when 2 dependencies are on the same rank, their lexical order makes the difference." );
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -225,7 +225,7 @@ public class FlatDependencies
         r.ConsiderRequiredMissingAsStructureError = true;
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -242,7 +242,7 @@ public class FlatDependencies
         Assert.That( r.SortedItems, Is.Null );
         Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );
         Assert.That( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ), Is.EquivalentTo( new[] { c, d, e, f } ), "Cycle is detected in its entirety: the 'head' can be any participant." );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -258,7 +258,7 @@ public class FlatDependencies
         Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item: this is always true (even if there is only one participant)." );
         Assert.That( r.CycleDetected.Count, Is.EqualTo( 2 ), "Cycle is 'c=>c'" );
         Assert.That( r.CycleDetected[0].Item, Is.SameAs( c ), "The culprit is actually the only item." );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -271,7 +271,7 @@ public class FlatDependencies
         var e = new TestableItem( "E", "↽D" );
         var r = DependencySorter.OrderItems( TestHelper.Monitor, e, d, a );
         r.AssertOrdered( "A", "E", "D" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -294,7 +294,7 @@ public class FlatDependencies
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, e, g, b, h, c, d, i, f, a );
         r.AssertOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
 
         // Now, makes D requires E: D => A,E=>(C=>(B=>(A))) (5), where G => E=>(C=>(B=>(A))) (4)
         // G & D have no dependencies between them and actually share the same rank: the lexical order applies.
@@ -309,13 +309,13 @@ public class FlatDependencies
         e.Add( "↽ D" );
         r = DependencySorter.OrderItems( TestHelper.Monitor, e, c, b, g, h, i, d, f, a );
         r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
 
         // This does not change the dependency order per se (it just contributes to make D "heavier" but do not change its rank).
         h.Add( "↽ D" );
         r = DependencySorter.OrderItems( TestHelper.Monitor, f, i, b, g, h, d, e, a, c );
         r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
 
         // Missing "RequiredBy" are just useless: we simply forget them (and they do not change anything in the ordering of course).
         // We do not consider them as "Missing Dependencies" since they are NOT missing dependencies :-).
@@ -324,7 +324,7 @@ public class FlatDependencies
         r = DependencySorter.OrderItems( TestHelper.Monitor, f, b, h, i, e, g, a, d, c );
         r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
         Assert.That( r.ItemIssues, Is.Empty );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
 
         // Of course, RequiredBy participates to cycle...
         // B => D => (E, H => B) => C => (B, H => B)
@@ -344,7 +344,7 @@ public class FlatDependencies
         bool cycle3 = new[] { d, e, c, h, b }.SequenceEqual( cycleTail );
         Assert.That( cycle1 || cycle2 || cycle3 );
 
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -373,7 +373,7 @@ public class FlatDependencies
             Assert.That( r.HasStructureError, Is.False );
             Assert.That( r.IsComplete, Is.True );
             Assert.That( r.SortedItems.Count, Is.EqualTo( 6 ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
 
     }

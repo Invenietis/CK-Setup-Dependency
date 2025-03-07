@@ -28,7 +28,7 @@ public class ByNames
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
             Assert.That( !r.IsComplete );
             Assert.That( r.HasStructureError && r.StructureErrorCount == 1 );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -44,18 +44,18 @@ public class ByNames
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, item2, item1 );
                 Assert.That( !r.IsComplete );
                 Assert.That( r.HasStructureError );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, item1, item2 );
                 Assert.That( !r.IsComplete );
                 Assert.That( r.HasStructureError );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, item1 );
                 Assert.That( r.IsComplete );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
 
         }
@@ -71,13 +71,13 @@ public class ByNames
             var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "A" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -91,13 +91,13 @@ public class ByNames
             var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, C );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "C.Head", "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -112,13 +112,13 @@ public class ByNames
             var r = DependencySorter.OrderItems( TestHelper.Monitor, A, C );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "C.Head", "A", "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, A );
             Assert.That( r.IsComplete );
             Assert.That( r.IsOrdered( "A" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 }

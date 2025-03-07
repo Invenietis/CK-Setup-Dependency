@@ -19,7 +19,7 @@ namespace CK.Setup;
 /// <remarks>
 /// A <see cref="IDependentItemGroup"/> implementation should implement this 
 /// (it is then its own IDependentItemGroupRef): when the group object exists it can be used
-/// as a (non optional) reference. The struct <see cref="NamedDependentItemGroupRef"/> must be used for 
+/// as a (non optional) reference. The <see cref="NamedDependentItemGroupRef"/> must be used for 
 /// optional or pure named reference.
 /// </remarks>
 public interface IDependentItemGroupRef : IDependentItemRef

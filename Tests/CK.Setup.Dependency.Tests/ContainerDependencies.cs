@@ -25,12 +25,12 @@ public class ContainerDependencies
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
             r.AssertOrdered( "C.Head", "C" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, true, c );
             r.AssertOrdered( "C.Head", "C" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -47,7 +47,7 @@ public class ContainerDependencies
         Assert.That( r.SortedItems[2].Item.FullName, Is.EqualTo( "B" ), "Lexical order." );
         Assert.That( r.SortedItems[3].Item.FullName, Is.EqualTo( "C" ), "Container" );
         new ResultChecker( r ).CheckRecurse( c.FullName );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
         r.CheckChildren( "C", "A,B" );
     }
 
@@ -68,7 +68,7 @@ public class ContainerDependencies
         Assert.That( r.SortedItems[4].Item.FullName, Is.EqualTo( "ZeContainer" ), "Container" );
 
         new ResultChecker( r ).CheckRecurse( c.FullName, e.FullName );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
         r.CheckChildren( "ZeContainer", "A,B,E" );
     }
 
@@ -81,9 +81,9 @@ public class ContainerDependencies
         Action test = () =>
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, pAModel, pA );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
                 var rRevert = DependencySorter.OrderItems( TestHelper.Monitor, true, pAModel, pA );
-                ResultChecker.SimpleCheck( rRevert );
+                ResultChecker.SimpleCheckAndReset( rRevert );
 
                 r.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
                 rRevert.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
@@ -108,9 +108,9 @@ public class ContainerDependencies
         Action testAndRestore = () =>
             {
                 var r1 = DependencySorter.OrderItems( TestHelper.Monitor, pAModel, pA, pBModel, pB );
-                ResultChecker.SimpleCheck( r1 );
+                ResultChecker.SimpleCheckAndReset( r1 );
                 var r2 = DependencySorter.OrderItems( TestHelper.Monitor, true, pAModel, pA, pBModel, pB );
-                ResultChecker.SimpleCheck( r2 );
+                ResultChecker.SimpleCheckAndReset( r2 );
 
                 // There is no constraint between A and Model.B: depending on the sort order this changes.
                 r1.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "B" );
@@ -153,9 +153,9 @@ public class ContainerDependencies
         Action testAndRestore = () =>
         {
             var r1 = DependencySorter.OrderItems( TestHelper.Monitor, all );
-            ResultChecker.SimpleCheck( r1 );
+            ResultChecker.SimpleCheckAndReset( r1 );
             var r2 = DependencySorter.OrderItems( TestHelper.Monitor, true, all );
-            ResultChecker.SimpleCheck( r2 );
+            ResultChecker.SimpleCheckAndReset( r2 );
 
             // There is no constraint between:
             // - A and Model.B
@@ -203,21 +203,21 @@ public class ContainerDependencies
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c0, c1 );
             r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c0, c1, c2 );
             r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c1, c0 );
             r.AssertOrdered( "C0.Head", "A", "B", "C", "C0", "C1.Head", "X", "C1", "C2.Head", "Y", "C2" );
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
         }
     }
@@ -230,7 +230,7 @@ public class ContainerDependencies
         var c2 = new TestableContainer( "C2", new TestableItem( "Y", "⇀C1" ) );
         var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c0, c1 );
         new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
         r.CheckChildren( "C0", "A,B,C" );
         r.CheckChildren( "C1", "X" );
         r.CheckChildren( "C2", "Y" );
@@ -261,7 +261,7 @@ public class ContainerDependencies
             Assert.That( r.ItemIssues[1].MissingDependencies.Count(), Is.EqualTo( 1 ) );
             Assert.That( r.ItemIssues[1].MissingDependencies.First(), Is.EqualTo( "?OptDirect" ) );
 
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -272,7 +272,7 @@ public class ContainerDependencies
         var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
         Assert.That( r.CycleDetected, Is.Not.Null );
         Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ A ⇀ A" ) );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -295,7 +295,7 @@ public class ContainerDependencies
         // that the cycle starts (and ends) with Nuage because children are in linked list (added at the head).
         // (This remarks is valid for the other CycleDetection below.)
         Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⇀ Stratus ⊏ Nuage" ) );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -315,7 +315,7 @@ public class ContainerDependencies
         Assert.That( r.SortedItems, Is.Null );
         // See remark in CycleDetection1.
         Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇀ Stratus ⊏ Nuage" ) );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -336,7 +336,7 @@ public class ContainerDependencies
         // See remark in CycleDetection1.
         // Here we can see the RequiredByRequires relation: ⇌
         Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇌ Stratus ⊏ Nuage" ) );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -367,21 +367,21 @@ public class ContainerDependencies
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
             Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Ordering handles duplicates.
             var r = DependencySorter.OrderItems( TestHelper.Monitor, new IDependentItem[] { c, c } );
             Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Ordering handles duplicates.
             var r = DependencySorter.OrderItems( TestHelper.Monitor, new IDependentItem[] { c, c }.Concat( c.Children.Cast<IDependentItem>() ).Concat( c.Children.Cast<IDependentItem>() ), null );
             Assert.That( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -464,6 +464,6 @@ public class ContainerDependencies
         };
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, options, cofely, fmBuildings, fmClient, fmFunctions );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 }

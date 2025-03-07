@@ -134,7 +134,7 @@ public class Generalization
         Assert.That( r.CycleDetected, Is.Not.Null );
         Assert.That( r.SortedItems, Is.Null );
         Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇌ Nuage ⇀ Rubis" ) );
-        ResultChecker.SimpleCheck( r );
+        ResultChecker.SimpleCheckAndReset( r );
     }
 
     [Test]
@@ -159,7 +159,7 @@ public class Generalization
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
                 Assert.That( r.CycleDetected, Is.Null );
                 Assert.That( r.SortedItems, Is.Not.Null );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             // Before saying that "Gem" generalizes "Rubis", we check that
             // adding a "Rubis" => "Gem" dependency does not create any cycle.
@@ -170,7 +170,7 @@ public class Generalization
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
                 Assert.That( r.CycleDetected, Is.Null );
                 Assert.That( r.SortedItems, Is.Not.Null );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             // Now we say that "Gem" generalizes "Rubis".
             // This is more than adding "Rubis" => "Gem" dependency because since
@@ -183,7 +183,7 @@ public class Generalization
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
                 Assert.That( r.CycleDetected, Is.Not.Null );
                 Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇌ Stratus ⊏ Nuage" ) );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             // Setting a Container for Rubis (Root for instance), solves the problem.
             rubis.Container = root;
@@ -191,7 +191,7 @@ public class Generalization
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
                 Assert.That( r.CycleDetected, Is.Null );
                 Assert.That( r.SortedItems, Is.Not.Null );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
             // Setting a brand new Container is ok also.
             rubis.Container = new TestableContainer( "Specialized Features." );
@@ -199,7 +199,7 @@ public class Generalization
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
                 Assert.That( r.CycleDetected, Is.Null );
                 Assert.That( r.SortedItems, Is.Not.Null );
-                ResultChecker.SimpleCheck( r );
+                ResultChecker.SimpleCheckAndReset( r );
             }
         }
     }

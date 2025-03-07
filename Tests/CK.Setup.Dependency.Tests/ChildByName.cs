@@ -29,14 +29,14 @@ public class ChildByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Starting by CB.
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, cA );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -50,14 +50,14 @@ public class ChildByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "OB", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Starting with the Item.
             var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, cB );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "OB", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         var cA = new TestableContainer( "CA", "⊐ OA" );
         cB.Add( "⊐ CA" );
@@ -67,14 +67,14 @@ public class ChildByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, oB, cA, oA );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         {
             // Starting with the Items.
             var r = DependencySorter.OrderItems( TestHelper.Monitor, oB, oA, cB, cA );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "OB", "OA", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -90,7 +90,7 @@ public class ChildByName
             Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
             Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedChild ) );
             Assert.That( r.ItemIssues[0].MissingChildren.Single(), Is.EqualTo( "CA" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -111,7 +111,7 @@ public class ChildByName
             Assert.That( issue.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
             Assert.That( issue.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
 
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -163,7 +163,7 @@ public class ChildByName
             Assert.That( issue4.StructureError, Is.EqualTo( DependentItemStructureError.MultipleContainer ) );
             Assert.That( issue4.ExtraneousContainers.Single(), Is.EqualTo( "CB1" ) );
 
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 

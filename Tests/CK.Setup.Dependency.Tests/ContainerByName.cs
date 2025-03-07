@@ -28,7 +28,7 @@ public class ContainerByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cA, cB );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "CB", "CA" );
         }
         {
@@ -36,7 +36,7 @@ public class ContainerByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, cB, cA );
             Assert.That( r.IsComplete );
             r.AssertOrdered( "CB.Head", "CA.Head", "CA", "CB" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "CB", "CA" );
         }
     }
@@ -49,7 +49,7 @@ public class ContainerByName
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1 );
             r.AssertOrdered( "C.Head", "O1", "C" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C", "O1" );
         }
         var o2 = new TestableItem( "O2", "⊏ O1" );
@@ -57,20 +57,20 @@ public class ContainerByName
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1, o2 );
             Assert.That( r.IsComplete, Is.False );
             Assert.That( r.HasStructureError, Is.True );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
         o2.Add( "⊏ C", "↽ O1" );
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1, o2 );
             r.AssertOrdered( "C.Head", "O2", "O1", "C" );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C", "O1,O2" );
         }
         var sub = new TestableItem( "Cycle", "⊏ C", "⇀ C" );
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1, o2, sub );
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ Cycle ⇀ C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -86,7 +86,7 @@ public class ContainerByName
             Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
             Assert.That( r.ItemIssues[0].StructureError, Is.EqualTo( DependentItemStructureError.MissingNamedContainer ) );
             Assert.That( r.ItemIssues[0].MissingChildren, Is.Empty );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -98,7 +98,7 @@ public class ContainerByName
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1 );
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⇀ C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -110,7 +110,7 @@ public class ContainerByName
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1 );
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊏ C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -124,7 +124,7 @@ public class ContainerByName
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c, o1, d );
             Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊏ D ⊏ C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -148,7 +148,7 @@ public class ContainerByName
             Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
             Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
             Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
 
         {
@@ -162,7 +162,7 @@ public class ContainerByName
             Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
             Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
             Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -186,7 +186,7 @@ public class ContainerByName
             Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
             Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
             Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
 
         {
@@ -198,7 +198,7 @@ public class ContainerByName
             Assert.That( r.ItemIssues[0].Item.FullName, Is.EqualTo( "O1" ) );
             Assert.That( r.ItemIssues[0].Item.Container.FullName, Is.EqualTo( "D" ) );
             Assert.That( r.ItemIssues[0].ExtraneousContainers.Single(), Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
     }
 
@@ -219,7 +219,7 @@ public class ContainerByName
             Assert.That( r.HasStructureError, Is.False );
             r.AssertOrdered( "C.Head", "O1", "C" );
             Assert.That( r.SortedItems[1].Container.FullName, Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
 
         {
@@ -229,7 +229,7 @@ public class ContainerByName
             Assert.That( r.HasStructureError, Is.False );
             r.AssertOrdered( "C.Head", "O1", "C" );
             Assert.That( r.SortedItems[1].Container.FullName, Is.EqualTo( "C" ) );
-            ResultChecker.SimpleCheck( r );
+            ResultChecker.SimpleCheckAndReset( r );
         }
 
 
