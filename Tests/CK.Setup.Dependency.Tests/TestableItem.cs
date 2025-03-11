@@ -21,7 +21,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
     List<IDependentItemRef> _requires;
     List<IDependentItemRef> _requiredBy;
     List<IDependentItemGroupRef> _groups;
-    List<IDependentItem> _relatedItems;
+    List<IDependentItem>? _relatedItems;
     int _startDependencySortCount;
 
     static int _ignoreCheckedCount = 0;
@@ -36,7 +36,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         _requires = new List<IDependentItemRef>();
         _requiredBy = new List<IDependentItemRef>();
         _groups = new List<IDependentItemGroupRef>();
-        FullName = fullName;
+        _fullName = fullName;
         if( content != null ) Add( content );
         if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
     }
@@ -86,9 +86,9 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         return true;
     }
 
-    public IDependentItemContainerRef Container { get; set; }
+    public IDependentItemContainerRef? Container { get; set; }
 
-    public IDependentItemRef Generalization { get; set; }
+    public IDependentItemRef? Generalization { get; set; }
 
     public void CheckStartDependencySortCountAndReset()
     {
@@ -126,13 +126,13 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
 
     public IList<IDependentItem> RelatedItems => _relatedItems ?? (_relatedItems = new List<IDependentItem>());
 
-    IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
+    IEnumerable<IDependentItem>? IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
 
     public override string ToString() => FullName;
 
     bool IDependentItemRef.Optional => false;
 
-    object IDependentItem.StartDependencySort( IActivityMonitor m )
+    object? IDependentItem.StartDependencySort( IActivityMonitor m )
     {
         if( _startDependencySortCount != -1 )
         {

@@ -12,12 +12,41 @@ using System.Text;
 using NUnit.Framework;
 using CK.Setup.Dependency.Tests;
 using static CK.Testing.MonitorTestHelper;
+using FluentAssertions;
 
 namespace CK.Setup.Dependency.Tests;
 
 [TestFixture]
 public class ContainerAndRequirementsSemantics
 {
+    [TestCase( true, true )]
+    [TestCase( false, true )]
+    [TestCase( true, false )]
+    [TestCase( false, false )]
+    public void Requirements_of_a_Container_are_not_requirements_of_its_items( bool reverseName, bool revertReg )
+    {
+        using( TestableItem.IgnoreCheckCount() )
+        {
+            var C = new TestableContainer( "C", "⊐CSub", "∋E", "⇀Item" );
+            var CSub = new TestableContainer( "CSub", "∋ESub" );
+            var Item = new TestableItem( "Item" );
+            var E = new TestableItem( "E" );
+            var ESub = new TestableItem( "ESub" );
+            IEnumerable<TestableItem> reg = [C, CSub, Item, E, ESub];
+            if( revertReg ) reg = reg.Reverse();
+            var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+            Assert.That( r.IsComplete );
+            GetSorted( "C" ).Requires.Should().Contain( GetSorted( "Item" ) );
+            GetSorted( "CSub" ).Requires.Should().BeEmpty();
+            GetSorted( "E" ).Requires.Should().BeEmpty();
+            GetSorted( "ESub" ).Requires.Should().BeEmpty();
+
+            ISortedItem GetSorted( string name )
+            {
+                return r.SortedItems.Single( s => s.FullName == name );
+            }
+        }
+    }
 
     [Test]
     public void ContainerSpecializationLoop()
@@ -108,7 +137,7 @@ public class ContainerAndRequirementsSemantics
             var C = new TestableContainer( "C" );
             var I = new TestableItem( "I" );
 
-            // Item 'I' can not be both in 'C' and requires it.
+            // Item 'I' cannot be both in 'C' and requires it.
             // This is because a "Requirement" is on the tail of a Container (actually not the Head but 
             // the Container itself).
             C.Children.Add( I );

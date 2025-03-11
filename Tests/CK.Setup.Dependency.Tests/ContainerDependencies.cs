@@ -204,11 +204,17 @@ public class ContainerDependencies
         if( revertReg ) reg = reg.Reverse();
         var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
         r.SortedItems.Where( s => !s.IsGroupHead ).Select( s => s.FullName ).Concatenate().Should().Be( "A, B, C, D, E" );
-        r.SortedItems.Single( s => s.FullName == "A" ).Requires.Select( r => r.FullName ).Should().BeEmpty();
-        r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["A"] );
-        r.SortedItems.Single( s => s.FullName == "C" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["B"] );
-        r.SortedItems.Single( s => s.FullName == "D" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["C"] );
-        r.SortedItems.Single( s => s.FullName == "E" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["D"] );
+        GetSorted( "A" ).Requires.Select( r => r.FullName ).Should().BeEmpty();
+        GetSorted( "B" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["A"] );
+        GetSorted( "C" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["B"] );
+        GetSorted( "D" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["C"] );
+        GetSorted( "E" ).Requires.Select( r => r.FullName ).Should().BeEquivalentTo( ["D"] );
+
+        ISortedItem GetSorted( string name )
+        {
+            return r.SortedItems.Single( s => s.FullName == name );
+        }
+
     }
 
     [Test]
