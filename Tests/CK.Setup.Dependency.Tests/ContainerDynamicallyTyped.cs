@@ -5,13 +5,10 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using static CK.Testing.MonitorTestHelper;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -45,7 +42,7 @@ public class ContainerDynamicallyTyped
         var c = new TestableContainer( DependentItemKind.Item, "C", new TestableItem( "A" ), new TestableItem( "B" ) );
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
-        Assert.That( r.HasStructureError );
+        Throw.Assert( r.HasStructureError );
         r.LogError( TestHelper.Monitor );
     }
 
@@ -57,7 +54,7 @@ public class ContainerDynamicallyTyped
         e.Container = c;
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, e );
-        Assert.That( r.HasStructureError );
+        Throw.Assert( r.HasStructureError );
         r.LogError( TestHelper.Monitor );
     }
 
@@ -70,7 +67,7 @@ public class ContainerDynamicallyTyped
             var c2 = new TestableContainer( "C2", "⊏C1" );
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c0, c1 );
             r.LogError( TestHelper.Monitor );
-            Assert.That( r.HasStructureError );
+            Throw.Assert( r.HasStructureError );
         }
         {
             var c0 = new TestableContainer( "C0" );
@@ -78,14 +75,14 @@ public class ContainerDynamicallyTyped
             var c2 = new TestableContainer( "C2", "⊏C1" );
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c0, c1 );
             r.LogError( TestHelper.Monitor );
-            Assert.That( r.HasStructureError );
+            Throw.Assert( r.HasStructureError );
         }
         {
             var c0 = new TestableContainer( "C0" );
             var c1 = new TestableContainer( "C1", "⊏C0" );
             var c2 = new TestableContainer( DependentItemKind.Item, "C2", "⊏C1" );
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c0, c1 );
-            Assert.That( r.HasStructureError, Is.False, "Success since c2 has no items." );
+            r.HasStructureError.ShouldBeFalse( "Success since c2 has no items." );
         }
     }
 
@@ -99,12 +96,12 @@ public class ContainerDynamicallyTyped
             var gB = new TestableContainer( DependentItemKind.Group, "GB", "∋C0" );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, gA, c0, gB );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "GA.Head", "GB.Head", "C0.Head", "C0", "GA", "GB" );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, gA, c0, gB );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "GB.Head", "GA.Head", "C0.Head", "C0", "GB", "GA" );
             }
         }
@@ -118,24 +115,24 @@ public class ContainerDynamicallyTyped
             gB.Container = c0;
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, gA, c0, g1, gB );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "C0.Head", "GA.Head", "GB.Head", "G1.Head", "Alpha", "G1", "GA", "GB", "C0" );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, gA, c0, g1, gB );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "C0.Head", "GB.Head", "GA.Head", "G1.Head", "Alpha", "G1", "GB", "GA", "C0" );
             }
             gA.Container = null;
             gB.Container = null;
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, gA, gB, g1, c0 );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "C0.Head", "GA.Head", "GB.Head", "C0", "G1.Head", "Alpha", "G1", "GA", "GB" );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, gA, gB, g1, c0 );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "GB.Head", "GA.Head", "C0.Head", "G1.Head", "C0", "Alpha", "G1", "GB", "GA" );
             }
         }

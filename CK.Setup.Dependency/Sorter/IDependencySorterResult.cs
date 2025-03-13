@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CK.Core;
 
 namespace CK.Setup;
@@ -57,6 +57,7 @@ public interface IDependencySorterResult
     /// must be 0): <see cref="SortedItems"/> can be exploited.
     /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
     /// </summary>
+    [MemberNotNullWhen( true, nameof( SortedItems ) )]
     bool IsComplete { get; }
 
     /// <summary>

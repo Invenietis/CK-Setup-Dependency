@@ -8,10 +8,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
 using static CK.Testing.MonitorTestHelper;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -27,9 +27,9 @@ public class FlatDependencies
     public void NoItem()
     {
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, Array.Empty<TestableItem>(), null );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems, Is.Empty );
+        Throw.Assert( r.CycleDetected == null );
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.ShouldBeEmpty();
         ResultChecker.SimpleCheckAndReset( r );
     }
 
@@ -38,10 +38,11 @@ public class FlatDependencies
     {
         var oneItem = new TestableItem( "Test" );
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
-        Assert.That( r.SortedItems[0].Item, Is.SameAs( oneItem ) );
+        r.IsComplete.ShouldBeTrue();
+        r.CycleDetected.ShouldBeNull();
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.Count.ShouldBe( 1 );
+        r.SortedItems[0].Item.ShouldBeSameAs( oneItem );
         new ResultChecker( r ).CheckRecurse( "Test" );
         ResultChecker.SimpleCheckAndReset( r );
     }
@@ -51,20 +52,21 @@ public class FlatDependencies
     {
         var oneItem = new TestableItem( "Test", "⇀MissingDep" );
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.HasRequiredMissing );
-        Assert.That( r.HasStructureError );
+        r.CycleDetected.ShouldBeNull();
+        r.HasRequiredMissing.ShouldBeTrue();
+        r.HasStructureError.ShouldBeTrue();
 
         r.ConsiderRequiredMissingAsStructureError = false;
-        Assert.That( r.HasRequiredMissing && r.HasStructureError == false );
+        r.HasRequiredMissing.ShouldBeTrue();
+        r.HasStructureError.ShouldBeFalse();
 
-        Assert.That( r.ItemIssues.Count, Is.EqualTo( 1 ) );
-        Assert.That( r.ItemIssues[0].Item, Is.SameAs( oneItem ) );
-        Assert.That( r.ItemIssues.SelectMany( m => m.MissingDependencies ), Is.EquivalentTo( new[] { "MissingDep" } ) );
+        r.ItemIssues.Count.ShouldBe(1);
+        r.ItemIssues[0].Item.ShouldBe(oneItem);
+        r.ItemIssues.SelectMany(m => m.MissingDependencies).ShouldHaveSingleItem().ShouldBe( "MissingDep" );
         ResultChecker.CheckMissingInvariants( r );
 
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 1 ) );
-        Assert.That( r.SortedItems[0].Item, Is.SameAs( oneItem ) );
+        r.SortedItems.Count.ShouldBe(1);
+        r.SortedItems[0].Item.ShouldBe(oneItem);
 
         r.ConsiderRequiredMissingAsStructureError = true;
         new ResultChecker( r ).CheckRecurse( "Test" );
@@ -77,11 +79,12 @@ public class FlatDependencies
         var oneItem = new TestableItem( "Test" );
         oneItem.RequiredBy.Add( new TestableItem( "AutoDiscovered" ) );
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
-        Assert.That( r.SortedItems[0].Item, Is.SameAs( oneItem ) );
-        Assert.That( r.SortedItems[1].Item.FullName, Is.EqualTo( "AutoDiscovered" ) );
+        r.IsComplete.ShouldBeTrue();
+        r.CycleDetected.ShouldBeNull();
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.Count.ShouldBe(2);
+        r.SortedItems[0].Item.ShouldBe(oneItem);
+        r.SortedItems[1].Item.FullName.ShouldBe("AutoDiscovered");
 
         new ResultChecker( r ).CheckRecurse( "Test", "AutoDiscovered" );
         ResultChecker.SimpleCheckAndReset( r );
@@ -93,11 +96,11 @@ public class FlatDependencies
         var oneItem = new TestableItem( "Test" );
         oneItem.Requires.Add( new TestableItem( "AutoDiscovered" ) );
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, new[] { oneItem }, null );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
-        Assert.That( r.SortedItems[0].Item.FullName, Is.EqualTo( "AutoDiscovered" ) );
-        Assert.That( r.SortedItems[1].Item, Is.SameAs( oneItem ) );
+        r.IsComplete.ShouldBeTrue();
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.Count.ShouldBe(2);
+        r.SortedItems[0].Item.FullName.ShouldBe("AutoDiscovered");
+        r.SortedItems[1].Item.ShouldBe(oneItem);
 
         new ResultChecker( r ).CheckRecurse( "Test", "AutoDiscovered" );
         ResultChecker.SimpleCheckAndReset( r );
@@ -110,11 +113,11 @@ public class FlatDependencies
         var i2 = new TestableItem( "User", "⇀Base" );
         {
             IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i1, i2 );
-            Assert.That( r.CycleDetected == null );
-            Assert.That( r.ItemIssues, Is.Empty );
-            Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
-            Assert.That( r.SortedItems[0].Item, Is.SameAs( i1 ) );
-            Assert.That( r.SortedItems[1].Item, Is.SameAs( i2 ) );
+            r.IsComplete.ShouldBeTrue();
+            r.ItemIssues.ShouldBeEmpty();
+            r.SortedItems.Count.ShouldBe(2);
+            r.SortedItems[0].Item.ShouldBe(i1);
+            r.SortedItems[1].Item.ShouldBe(i2);
 
             new ResultChecker( r ).CheckRecurse( "Base", "User" );
             ResultChecker.SimpleCheckAndReset( r );
@@ -122,11 +125,11 @@ public class FlatDependencies
         {
             // Allowing duplicates (and reversing initial order).
             IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i2, i1, i1, i2 );
-            Assert.That( r.CycleDetected == null );
-            Assert.That( r.ItemIssues, Is.Empty );
-            Assert.That( r.SortedItems.Count, Is.EqualTo( 2 ) );
-            Assert.That( r.SortedItems[0].Item, Is.SameAs( i1 ) );
-            Assert.That( r.SortedItems[1].Item, Is.SameAs( i2 ) );
+            r.IsComplete.ShouldBeTrue();
+            r.ItemIssues.ShouldBeEmpty();
+            r.SortedItems.Count.ShouldBe(2);
+            r.SortedItems[0].Item.ShouldBe(i1);
+            r.SortedItems[1].Item.ShouldBe(i2);
 
             new ResultChecker( r ).CheckRecurse( "Base", "User" );
             ResultChecker.SimpleCheckAndReset( r );
@@ -139,10 +142,10 @@ public class FlatDependencies
         var i1 = new TestableItem( "Test" );
         var i2 = new TestableItem( "Test" );
         IDependencySorterResult r = DependencySorter.OrderItems( TestHelper.Monitor, i1, i2 );
-        Assert.That( r.HasStructureError );
+        Throw.Assert( r.HasStructureError );
         // Since we start with i1:
-        Assert.That( r.ItemIssues[0].Item, Is.SameAs( i1 ) );
-        Assert.That( r.ItemIssues[0].Homonyms, Is.EquivalentTo( new[] { i2 } ) );
+        r.ItemIssues[0].Item.ShouldBe(i1);
+        r.ItemIssues[0].Homonyms.ShouldHaveSingleItem().ShouldBe( i2 );
 
         ResultChecker.SimpleCheckAndReset( r );
     }
@@ -157,14 +160,14 @@ public class FlatDependencies
         var i5 = new TestableItem( "Appli", "⇀MCulture", "⇀Actor" );
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, i5, i1, i4, i2, i3 );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 5 ) );
-        Assert.That( r.SortedItems[0].Item, Is.SameAs( i1 ) );
-        Assert.That( r.SortedItems[1].Item, Is.SameAs( i2 ) );
-        Assert.That( r.SortedItems[2].Item, Is.SameAs( i3 ) );
-        Assert.That( r.SortedItems[3].Item, Is.SameAs( i4 ) );
-        Assert.That( r.SortedItems[4].Item, Is.SameAs( i5 ) );
+        r.IsComplete.ShouldBeTrue();
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.Count.ShouldBe(5);
+        r.SortedItems[0].Item.ShouldBe(i1);
+        r.SortedItems[1].Item.ShouldBe(i2);
+        r.SortedItems[2].Item.ShouldBe(i3);
+        r.SortedItems[3].Item.ShouldBe(i4);
+        r.SortedItems[4].Item.ShouldBe(i5);
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "MCulture", "Appli" );
         ResultChecker.SimpleCheckAndReset( r );
@@ -183,9 +186,9 @@ public class FlatDependencies
         var i2Like = new TestableItem( "JustLikeRes", "⇀System" );
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
-        Assert.That( r.CycleDetected == null );
-        Assert.That( r.ItemIssues, Is.Empty );
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
+        r.IsComplete.ShouldBeTrue();
+        r.ItemIssues.ShouldBeEmpty();
+        r.SortedItems.Count.ShouldBe(8);
 
         r.AssertOrdered( "System", "JustLikeRes", "Res", "Act", "Acto", "Actor", "MCulture", "Appli" );
         // "Ordering is deterministic: when 2 dependencies are on the same rank, their lexical order makes the difference." );
@@ -208,20 +211,22 @@ public class FlatDependencies
 
         // Reversing lexical ordering is the last (optional) parameter.
         var r = DependencySorter.OrderItems( TestHelper.Monitor, true, i5, i2Like, i1, i3Ter, i4, i2, i3Bis, i3 );
-        Assert.That( r.CycleDetected == null );
+        r.CycleDetected.ShouldBeNull();
 
         // Since we started to add i5, the i5 => AnOtherMissingDependency is the first one, then comes the i2Like and the i3Bis.
-        Assert.That( r.ItemIssues.SelectMany( d => d.MissingDependencies ), Is.EquivalentTo( new[] { "AnOtherMissingDependency", "AnAwfulMissingDependency", "AnAwfulMissingDependency" } ) );
+        r.ItemIssues.SelectMany( d => d.MissingDependencies ).ToArray().ShouldBe(
+                        ["AnOtherMissingDependency", "AnAwfulMissingDependency", "AnAwfulMissingDependency"] );
         ResultChecker.CheckMissingInvariants( r );
 
-        Assert.That( r.SortedItems.Count, Is.EqualTo( 8 ) );
+        r.SortedItems.ShouldNotBeNull();
+        r.SortedItems.Count.ShouldBe( 8 );
         r.AssertOrdered( "System", "Res", "JustLikeRes", "Actor", "Acto", "Act", "MCulture", "Appli" );
         //Reversing of the order for 2 dependencies that are on the same rank can help detect missing dependencies: 
         //a setup MUST work regardless of the fact that we invert the order of items that have the same rank: since they 
         //share their rank there is NO dependency between them.
 
         r.ConsiderRequiredMissingAsStructureError = false;
-        Assert.That( r.HasRequiredMissing && r.HasStructureError == false );
+        Throw.Assert( r.HasRequiredMissing && r.HasStructureError == false );
         r.ConsiderRequiredMissingAsStructureError = true;
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );
@@ -239,9 +244,10 @@ public class FlatDependencies
         var e = new TestableItem( "E", "⇀F" );
         var f = new TestableItem( "F", "⇀C" );
         var r = DependencySorter.OrderItems( TestHelper.Monitor, e, b, c, d, f, a );
-        Assert.That( r.SortedItems, Is.Null );
-        Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );
-        Assert.That( r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ), Is.EquivalentTo( new[] { c, d, e, f } ), "Cycle is detected in its entirety: the 'head' can be any participant." );
+        r.SortedItems.ShouldBeNull();
+        r.CycleDetected.ShouldNotBeNull();
+        r.CycleDetected[0].Item.ShouldBeSameAs( r.CycleDetected.Last().Item, "Detected cycle shares its first and last item." );
+        r.CycleDetected.Skip( 1 ).Select( ec => ec.Item ).ToArray().ShouldBe( [f, c, d, e], "Cycle is detected in its entirety: the 'head' can be any participant." );
         ResultChecker.SimpleCheckAndReset( r );
     }
 
@@ -254,10 +260,12 @@ public class FlatDependencies
         var c = new TestableItem( "C", "⇀C", "⇀D" );
         var d = new TestableItem( "D" );
         var r = DependencySorter.OrderItems( TestHelper.Monitor, b, c, d, a );
-        Assert.That( r.SortedItems, Is.Null );
-        Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item: this is always true (even if there is only one participant)." );
-        Assert.That( r.CycleDetected.Count, Is.EqualTo( 2 ), "Cycle is 'c=>c'" );
-        Assert.That( r.CycleDetected[0].Item, Is.SameAs( c ), "The culprit is actually the only item." );
+        r.SortedItems.ShouldBeNull();
+        r.CycleDetected.ShouldNotBeNull();
+        r.CycleDetected[0].Item.ShouldBeSameAs( r.CycleDetected.Last().Item ,
+            "Detected cycle shares its first and last item: this is always true (even if there is only one participant)." );
+        r.CycleDetected.Count.ShouldBe( 2, "Cycle is 'c=>c'" );
+        r.CycleDetected[0].Item.ShouldBeSameAs( c, "The culprit is actually the only item." );
         ResultChecker.SimpleCheckAndReset( r );
     }
 
@@ -323,7 +331,7 @@ public class FlatDependencies
         b.Add( "↽ KExistePas" );
         r = DependencySorter.OrderItems( TestHelper.Monitor, f, b, h, i, e, g, a, d, c );
         r.AssertOrdered( "A", "B", "C", "F", "H", "E", "D", "G", "I" );
-        Assert.That( r.ItemIssues, Is.Empty );
+        r.ItemIssues.ShouldBeEmpty();
         ResultChecker.SimpleCheckAndReset( r );
 
         // Of course, RequiredBy participates to cycle...
@@ -332,17 +340,18 @@ public class FlatDependencies
         //  - B => D => H => B
         //  - B => D => E => C => B
         //  - B => D => E => C => H => B
-        Assert.That( d.RequiredBy, Is.Null.Or.Empty, "Otherwise this test will fail :-)." );
+        (d.RequiredBy == null || d.RequiredBy.Count == 0).ShouldBeTrue( "Otherwise this test will fail :-)." );
         d.Add( "↽B" );
         r = DependencySorter.OrderItems( TestHelper.Monitor, f, b, h, i, e, g, a, d, c );
-        Assert.That( r.SortedItems, Is.Null );
-        Assert.That( r.CycleDetected[0].Item, Is.SameAs( r.CycleDetected.Last().Item ), "Detected cycle shares its first and last item." );
+        r.SortedItems.ShouldBeNull();
+        r.CycleDetected.ShouldNotBeNull();
+        r.CycleDetected[0].Item.ShouldBeSameAs(r.CycleDetected.Last().Item, "Detected cycle shares its first and last item.");
 
         IEnumerable<IDependentItem> cycleTail = r.CycleDetected.Skip( 1 ).Select( ec => ec.Item );
         bool cycle1 = new[] { d, h, b }.SequenceEqual( cycleTail );
         bool cycle2 = new[] { d, e, c, b }.SequenceEqual( cycleTail );
         bool cycle3 = new[] { d, e, c, h, b }.SequenceEqual( cycleTail );
-        Assert.That( cycle1 || cycle2 || cycle3 );
+        Throw.Assert( cycle1 || cycle2 || cycle3 );
 
         ResultChecker.SimpleCheckAndReset( r );
     }
@@ -370,9 +379,9 @@ public class FlatDependencies
 
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, i1 );
-            Assert.That( r.HasStructureError, Is.False );
-            Assert.That( r.IsComplete, Is.True );
-            Assert.That( r.SortedItems.Count, Is.EqualTo( 6 ) );
+            r.HasStructureError.ShouldBeFalse();
+            r.IsComplete.ShouldBeTrue( );
+            r.SortedItems.Count.ShouldBe( 6 );
             ResultChecker.SimpleCheckAndReset( r );
         }
 

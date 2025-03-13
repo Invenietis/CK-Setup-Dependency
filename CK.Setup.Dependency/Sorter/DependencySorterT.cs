@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
 using System.Collections;
@@ -336,7 +335,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
 
         IEnumerable<ISortedItem> ISortedItem.Groups => GetGroups();
 
-        IEnumerable<ISortedItem> ISortedItem.Requires => _cleanRequires ?? GetRequires().ToArray();
+        IEnumerable<ISortedItem> ISortedItem.Requires => _cleanRequires ??= GetRequires().ToArray();
 
         IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires();
 

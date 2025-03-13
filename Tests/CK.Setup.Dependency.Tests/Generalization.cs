@@ -5,11 +5,8 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
+using Shouldly;
 using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setup.Dependency.Tests;
@@ -41,12 +38,13 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[2].Container.ShouldNotBeNull().FullName.ShouldBe("Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Second, register ASpec that generalizes A that references the container: the container is automatically discovered.
             container.Children.Clear();
@@ -54,24 +52,24 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Third, register the container that references A by name.
             container.Add( "⊐A" );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Fourth, register A that reference the container by name.
             container.Children.Clear();
@@ -79,12 +77,12 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.Find( "ASpec" ).Container.FullName, Is.EqualTo( "Container" ), "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
         }
     }
@@ -110,12 +108,14 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ) );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[2].Container.ShouldNotBeNull().FullName.ShouldBe( "Container" );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                Assert.That( r.SortedItems[2].Container.FullName, Is.EqualTo( "Container" ) );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[2].Container.ShouldNotBeNull().FullName.ShouldBe( "Container" );
             }
         }
     }
@@ -131,9 +131,8 @@ public class Generalization
                     new TestableItem( "Rubis", "↟Gem" )
                 );
         var r = DependencySorter.OrderItems( TestHelper.Monitor, c );
-        Assert.That( r.CycleDetected, Is.Not.Null );
-        Assert.That( r.SortedItems, Is.Null );
-        Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Rubis ↟ Gem ⊏ Pierre ⇌ Nuage ⇀ Rubis" ) );
+        r.SortedItems.ShouldBeNull();
+        r.CycleExplainedString.ShouldBe( "↳ Rubis ↟ Gem ⊏ Pierre ⇌ Nuage ⇀ Rubis" );
         ResultChecker.SimpleCheckAndReset( r );
     }
 
@@ -157,8 +156,8 @@ public class Generalization
                 // Here: Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ∋ Gem.
                 //       Rubis is not in a Container. There is no cycle.
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
-                Assert.That( r.CycleDetected, Is.Null );
-                Assert.That( r.SortedItems, Is.Not.Null );
+                r.CycleDetected.ShouldBeNull();
+                r.SortedItems.ShouldNotBeNull();
                 ResultChecker.SimpleCheckAndReset( r );
             }
             // Before saying that "Gem" generalizes "Rubis", we check that
@@ -168,8 +167,8 @@ public class Generalization
                 // Here: Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ∋ Gem, and Rubis => Gem.
                 // No Cycle.
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
-                Assert.That( r.CycleDetected, Is.Null );
-                Assert.That( r.SortedItems, Is.Not.Null );
+                r.CycleDetected.ShouldBeNull();
+                r.SortedItems.ShouldNotBeNull();
                 ResultChecker.SimpleCheckAndReset( r );
             }
             // Now we say that "Gem" generalizes "Rubis".
@@ -181,24 +180,24 @@ public class Generalization
                 // This is like adding Pierre ⊏ Rubis... and this creates a cycle at the Container level:
                 // Rubis => Stratus ⊏ Cumulus ⊏ Nuage => Pierre ⊏ Rubis.
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
-                Assert.That( r.CycleDetected, Is.Not.Null );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇌ Stratus ⊏ Nuage" ) );
+                r.CycleDetected.ShouldNotBeNull();
+                r.CycleExplainedString.ShouldBe( "↳ Nuage ⇀ Pierre ⊐ Rubis ⇌ Stratus ⊏ Nuage" );
                 ResultChecker.SimpleCheckAndReset( r );
             }
             // Setting a Container for Rubis (Root for instance), solves the problem.
             rubis.Container = root;
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
-                Assert.That( r.CycleDetected, Is.Null );
-                Assert.That( r.SortedItems, Is.Not.Null );
+                r.CycleDetected.ShouldBeNull();
+                r.SortedItems.ShouldNotBeNull();
                 ResultChecker.SimpleCheckAndReset( r );
             }
             // Setting a brand new Container is ok also.
             rubis.Container = new TestableContainer( "Specialized Features." );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, root, rubis );
-                Assert.That( r.CycleDetected, Is.Null );
-                Assert.That( r.SortedItems, Is.Not.Null );
+                r.CycleDetected.ShouldBeNull();
+                r.SortedItems.ShouldNotBeNull();
                 ResultChecker.SimpleCheckAndReset( r );
             }
         }
@@ -217,23 +216,27 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, A );
                 r.AssertOrdered( "A", "ASpec" );
-                Assert.That( r.SortedItems[1].Generalization, Is.SameAs( r.SortedItems[0] ) );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[1].Generalization.ShouldBeSameAs(r.SortedItems[0]);
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, A );
                 r.AssertOrdered( "A", "ASpec" );
-                Assert.That( r.SortedItems[1].Generalization, Is.SameAs( r.SortedItems[0] ) );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[1].Generalization.ShouldBeSameAs( r.SortedItems[0] );
             }
             // When A is NOT here it is okay...
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec );
                 r.AssertOrdered( "ASpec" );
-                Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[0].Generalization.ShouldBeNull();
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec );
                 r.AssertOrdered( "ASpec" );
-                Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[0].Generalization.ShouldBeNull();
             }
         }
     }
@@ -251,7 +254,8 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec );
                 r.AssertOrdered( "ASpec" );
-                Assert.That( r.SortedItems[0].Generalization, Is.Null );
+                r.SortedItems.ShouldNotBeNull();
+                r.SortedItems[0].Generalization.ShouldBeNull();
             }
         }
     }

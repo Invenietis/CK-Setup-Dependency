@@ -5,13 +5,8 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
-using System.Reflection;
 using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setup.Dependency.Tests;
@@ -51,7 +46,7 @@ public class ActorZoneTests
                     HookOutput = sortedItems => sortedItems.Trace( TestHelper.Monitor )
                 },
                 sqlDatabaseDefault, basicPackage, basicActor, basicGroup, zonePackage, zoneGroup, securityZone );
-            Assert.That( r.IsComplete );
+            Throw.Assert( r.IsComplete );
             r.AssertOrdered( "SqlDatabaseDefault.Head", "BasicPackage.Head", "BasicActor", "BasicGroup", "BasicPackage", "ZonePackage.Head", "SecurityZone", "ZoneGroup", "ZonePackage", "SqlDatabaseDefault" );
             ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "BasicPackage", "BasicActor,BasicGroup" );

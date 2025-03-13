@@ -1,18 +1,10 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (Tests\CK.Setup.Dependency.Tests\ContainerAndRequirementsSemantics.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
-using CK.Setup.Dependency.Tests;
+using Shouldly;
+using CK.Core;
 using static CK.Testing.MonitorTestHelper;
-using FluentAssertions;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -35,11 +27,11 @@ public class ContainerAndRequirementsSemantics
             IEnumerable<TestableItem> reg = [C, CSub, Item, E, ESub];
             if( revertReg ) reg = reg.Reverse();
             var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
-            Assert.That( r.IsComplete );
-            GetSorted( "C" ).Requires.Should().Contain( GetSorted( "Item" ) );
-            GetSorted( "CSub" ).Requires.Should().BeEmpty();
-            GetSorted( "E" ).Requires.Should().BeEmpty();
-            GetSorted( "ESub" ).Requires.Should().BeEmpty();
+            Throw.Assert( r.IsComplete );
+            GetSorted( "C" ).Requires.ShouldContain( GetSorted( "Item" ) );
+            GetSorted( "CSub" ).Requires.ShouldBeEmpty();
+            GetSorted( "E" ).Requires.ShouldBeEmpty();
+            GetSorted( "ESub" ).Requires.ShouldBeEmpty();
 
             ISortedItem GetSorted( string name )
             {
@@ -71,7 +63,7 @@ public class ContainerAndRequirementsSemantics
 
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, A, B, ASpec );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
             }
 
@@ -82,7 +74,7 @@ public class ContainerAndRequirementsSemantics
             ASpec.Generalization = A;
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, A, B, ASpec );
-                Assert.That( r.IsComplete );
+                Throw.Assert( r.IsComplete );
                 r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
             }
 
@@ -93,18 +85,18 @@ public class ContainerAndRequirementsSemantics
                 ASpec.Requires.Add( A );
                 {
                     var r = DependencySorter.OrderItems( TestHelper.Monitor, true, A, B, ASpec );
-                    Assert.That( r.IsComplete );
+                    Throw.Assert( r.IsComplete );
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "System", "ASpec.Head", "ASpec" );
                     // Here ASpec => A appears.
-                    Assert.That( r.SortedItems.Single( s => s.FullName == "ASpec" ).Requires.Single().FullName, Is.EqualTo( "A" ) );
+                    r.SortedItems.Single( s => s.FullName == "ASpec" ).Requires.Single().FullName.ShouldBe( "A" );
                 }
                 ASpec.Generalization = A;
                 {
                     var r = DependencySorter.OrderItems( TestHelper.Monitor, true, A, B, ASpec );
-                    Assert.That( r.IsComplete );
+                    Throw.Assert( r.IsComplete );
                     // Even with reverse naming, since ASpec is in System, System container closes the chain.
                     r.AssertOrdered( "System.Head", "A.Head", "B.Head", "B", "A", "ASpec.Head", "ASpec", "System" );
-                    Assert.That( r.SortedItems.Single( s => s.FullName == "ASpec" ).Requires, Is.Empty );
+                    r.SortedItems.Single( s => s.FullName == "ASpec" ).Requires.ShouldBeEmpty();
                 }
                 ASpec.Requires.Clear();
             }
@@ -115,15 +107,15 @@ public class ContainerAndRequirementsSemantics
             // It does not work: how a more specialized object can be "contained" in its "Generalization"?
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, A, B, ASpec );
-                Assert.That( !r.IsComplete );
-                Assert.That( r.CycleDetected, Is.Not.Null );
+                Throw.Assert( !r.IsComplete );
+                r.CycleDetected.ShouldNotBeNull().ShouldNotBeEmpty();
             }
             // Of course, ASpec can not be inside B...
             ASpec.Container = B;
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, A, B, ASpec );
-                Assert.That( !r.IsComplete );
-                Assert.That( r.CycleDetected, Is.Not.Null );
+                Throw.Assert( !r.IsComplete );
+                r.CycleDetected.ShouldNotBeNull().ShouldNotBeEmpty();
             }
         }
     }
@@ -144,23 +136,23 @@ public class ContainerAndRequirementsSemantics
             I.Requires.Add( C );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, C );
-                Assert.That( !r.IsComplete );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ⇀ C" ) );
+                Throw.Assert( !r.IsComplete );
+                r.CycleExplainedString.ShouldBe( "↳ C ⊐ I ⇀ C" );
             }
             // Under certain circumstances, one can consider that an item that is contained in a Container can require it.
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, new DependencySorterOptions() { SkipDependencyToContainer = true }, C );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "C.Head", "I", "C" ) );
-                Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );
+                Throw.Assert( r.IsComplete );
+                r.IsOrdered( "C.Head", "I", "C" ).ShouldBeTrue();
+                r.SortedItems[1].Requires.ShouldBeEmpty( "Requires have been cleaned up." );
             }
             I.Requires.Clear();
             I.Generalization = C;
             // Generalization is not concerned by this option.
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, C );
-                Assert.That( !r.IsComplete );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ C ⊐ I ↟ C" ) );
+                Throw.Assert( !r.IsComplete );
+                r.CycleExplainedString.ShouldBe( "↳ C ⊐ I ↟ C" );
             }
             // Of course, this works even with Generalization's Container "inheritance".
             var SuperC = new TestableContainer( "SuperC", C );
@@ -172,14 +164,14 @@ public class ContainerAndRequirementsSemantics
             ISpec.Add( "⇀SuperC" );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, new DependencySorterOptions() { SkipDependencyToContainer = true }, C, ISpec );
-                Assert.That( r.IsComplete );
-                Assert.That( r.IsOrdered( "SuperC.Head", "C.Head", "A", "I", "ISpec", "C", "SuperC" ) );
-                Assert.That( r.SortedItems[1].Requires, Is.Empty, "Requires have been cleaned up." );
+                Throw.Assert( r.IsComplete );
+                Throw.Assert( r.IsOrdered( "SuperC.Head", "C.Head", "A", "I", "ISpec", "C", "SuperC" ) );
+                r.SortedItems[1].Requires.ShouldBeEmpty("Requires have been cleaned up.");
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, SuperC, ISpec );
-                Assert.That( !r.IsComplete );
-                Assert.That( r.CycleExplainedString, Is.EqualTo( "↳ SuperC ⊐ C ⊐ ISpec ⇀ SuperC" ) );
+                Throw.Assert( !r.IsComplete );
+                r.CycleExplainedString.ShouldBe("↳ SuperC ⊐ C ⊐ ISpec ⇀ SuperC");
             }
         }
     }

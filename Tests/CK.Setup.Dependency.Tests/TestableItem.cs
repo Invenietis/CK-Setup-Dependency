@@ -7,11 +7,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using NUnit.Framework;
 using CK.Core;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -94,7 +91,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
     {
         if( _startDependencySortCount != -1 )
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+            _startDependencySortCount.ShouldBe( 1, "StartDependencySort must have been called once and only once." );
             _startDependencySortCount = 0;
         }
     }
@@ -105,7 +102,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         {
             if( _startDependencySortCount != -1 )
             {
-                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), $"StartDependencySort must have been called once and only once ({_fullName})." );
+                _startDependencySortCount.ShouldBe( 1, $"StartDependencySort must have been called once and only once ({_fullName})." );
             }
             return _fullName;
         }
@@ -136,7 +133,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
     {
         if( _startDependencySortCount != -1 )
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
+            _startDependencySortCount.ShouldBe( 0, "StartDependencySort must be called once and only once." );
             ++_startDependencySortCount;
         }
         return _startDependencySortCount;
