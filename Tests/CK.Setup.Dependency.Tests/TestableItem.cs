@@ -7,11 +7,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using NUnit.Framework;
 using CK.Core;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -21,7 +18,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
     List<IDependentItemRef> _requires;
     List<IDependentItemRef> _requiredBy;
     List<IDependentItemGroupRef> _groups;
-    List<IDependentItem> _relatedItems;
+    List<IDependentItem>? _relatedItems;
     int _startDependencySortCount;
 
     static int _ignoreCheckedCount = 0;
@@ -36,7 +33,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         _requires = new List<IDependentItemRef>();
         _requiredBy = new List<IDependentItemRef>();
         _groups = new List<IDependentItemGroupRef>();
-        FullName = fullName;
+        _fullName = fullName;
         if( content != null ) Add( content );
         if( _ignoreCheckedCount > 0 ) _startDependencySortCount = -1;
     }
@@ -86,15 +83,15 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         return true;
     }
 
-    public IDependentItemContainerRef Container { get; set; }
+    public IDependentItemContainerRef? Container { get; set; }
 
-    public IDependentItemRef Generalization { get; set; }
+    public IDependentItemRef? Generalization { get; set; }
 
     public void CheckStartDependencySortCountAndReset()
     {
         if( _startDependencySortCount != -1 )
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), "StartDependencySort must have been called once and only once." );
+            _startDependencySortCount.ShouldBe( 1, "StartDependencySort must have been called once and only once." );
             _startDependencySortCount = 0;
         }
     }
@@ -105,7 +102,7 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
         {
             if( _startDependencySortCount != -1 )
             {
-                Assert.That( _startDependencySortCount, Is.EqualTo( 1 ), $"StartDependencySort must have been called once and only once ({_fullName})." );
+                _startDependencySortCount.ShouldBe( 1, $"StartDependencySort must have been called once and only once ({_fullName})." );
             }
             return _fullName;
         }
@@ -126,17 +123,17 @@ class TestableItem : IDependentItem, IDependentItemDiscoverer, IDependentItemRef
 
     public IList<IDependentItem> RelatedItems => _relatedItems ?? (_relatedItems = new List<IDependentItem>());
 
-    IEnumerable<IDependentItem> IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
+    IEnumerable<IDependentItem>? IDependentItemDiscoverer<IDependentItem>.GetOtherItemsToRegister() => _relatedItems;
 
     public override string ToString() => FullName;
 
     bool IDependentItemRef.Optional => false;
 
-    object IDependentItem.StartDependencySort( IActivityMonitor m )
+    object? IDependentItem.StartDependencySort( IActivityMonitor m )
     {
         if( _startDependencySortCount != -1 )
         {
-            Assert.That( _startDependencySortCount, Is.EqualTo( 0 ), "StartDependencySort must be called once and only once." );
+            _startDependencySortCount.ShouldBe( 0, "StartDependencySort must be called once and only once." );
             ++_startDependencySortCount;
         }
         return _startDependencySortCount;

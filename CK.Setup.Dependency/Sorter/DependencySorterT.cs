@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
 using System.Diagnostics;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
+using System.Collections.Immutable;
 
 namespace CK.Setup;
 
@@ -86,7 +86,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
         return OrderItems( monitor, items, null, options );
     }
 
-    internal class Entry : ISortedItem<T>
+    internal sealed class Entry : ISortedItem<T>
     {
         // This marker saves one iteration over specialized items to resolve Generalizations.
         internal static readonly Entry _generalizationMissingMarker = new Entry( null, String.Empty );
@@ -99,6 +99,9 @@ public static class DependencySorter<T> where T : class, IDependentItem
         // Since ISortedItem.Requires is not necessarily called, I choose the dynamic way... It's a pity but there
         // is no way to do it differently...
         readonly Dictionary<object, object?>? _entries;
+
+        // Fix the Requires. Unifies RequiredBy for deferred groups and removes transitive dependencies.
+        IReadOnlyList<Entry>? _cleanRequires;
 
         public Entry( Dictionary<object, object?>? entries, string fullName )
         {
@@ -332,7 +335,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
 
         IEnumerable<ISortedItem> ISortedItem.Groups => GetGroups();
 
-        IEnumerable<ISortedItem> ISortedItem.Requires => GetRequires();
+        IEnumerable<ISortedItem> ISortedItem.Requires => _cleanRequires ??= GetRequires().ToArray();
 
         IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires();
 
@@ -390,7 +393,28 @@ public static class DependencySorter<T> where T : class, IDependentItem
 
         IEnumerable<Entry> GetRequires()
         {
-            return RemoveMissing( HeadIfGroupOrContainer != null ? HeadIfGroupOrContainer.Requires : Requires );
+            IEnumerable<IDependentItemRef>? result = Requires;
+            int directRank = Rank;
+            if( HeadIfGroupOrContainer != null )
+            {
+                directRank = HeadIfGroupOrContainer.Rank;
+                Throw.DebugAssert( HeadIfGroupOrContainer.Requires == null
+                                   || Requires == null
+                                   || !Requires.Intersect( HeadIfGroupOrContainer.Requires ).Any() );
+                if( result == null )
+                {
+                    result = HeadIfGroupOrContainer.Requires;
+                }
+                else if( HeadIfGroupOrContainer.Requires != null )
+                {
+                    Throw.DebugAssert( !result.Intersect( HeadIfGroupOrContainer.Requires ).Any() );
+                    result = result.Concat( HeadIfGroupOrContainer.Requires );
+                }
+            }
+            var cleaned = RemoveMissing( result );
+            --directRank;
+            var final = cleaned.Where( r => r.Rank == directRank );
+            return final;
         }
 
         IEnumerable<Entry> RemoveMissing( IEnumerable<IDependentItemRef>? r )
@@ -493,7 +517,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
             Debug.Assert( HasSevereStructureError || _entries.Values.All( o => o is Entry ), "No more start values in dictionary once registered done." );
         }
 
-        class Registerer
+        sealed class Registerer
         {
             readonly Dictionary<object, object?> _entries;
             readonly RankComputer _computer;
@@ -1165,7 +1189,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
                     foreach( IDependentItemRef dep in requirements )
                     {
                         // Security: skips any null entry and Generalization if it exists.
-                        if( dep == null || (eGen != null && (eGen == dep || eGen.FullName == dep.FullName)) ) continue;
+                        if( dep == null || (eGen != null && eGen.FullName == dep.FullName) ) continue;
 
                         // Creates the HashSet only if needed.
                         e.Requires ??= new HashSet<IDependentItemRef>();

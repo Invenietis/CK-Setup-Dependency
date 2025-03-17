@@ -7,10 +7,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
 using CK.Core;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -74,36 +73,36 @@ public class ItemAndItemRef
         IDependentItemGroup group = new Group() { FullName = "Group" };
         IDependentItemContainer container = new Container() { FullName = "Container" };
 
-        IDependentItemRef refItem = item.GetReference();
-        IDependentItemGroupRef refGroup = group.GetReference();
-        IDependentItemContainerRef refContainer = container.GetReference();
+        IDependentItemRef refItem = item.GetReference().ShouldNotBeNull();
+        IDependentItemGroupRef refGroup = group.GetReference().ShouldNotBeNull();
+        IDependentItemContainerRef refContainer = container.GetReference().ShouldNotBeNull();
 
-        Assert.That( refItem.FullName, Is.EqualTo( "Item" ) );
-        Assert.That( refGroup.FullName, Is.EqualTo( "Group" ) );
-        Assert.That( refContainer.FullName, Is.EqualTo( "Container" ) );
-        Assert.That( refItem.Optional, Is.False );
-        Assert.That( refGroup.Optional, Is.False );
-        Assert.That( refContainer.Optional, Is.False );
+        refItem.FullName.ShouldBe("Item" );
+        refGroup.FullName.ShouldBe( "Group" );
+        refContainer.FullName.ShouldBe( "Container" );
+        refItem.Optional.ShouldBeFalse();
+        refGroup.Optional.ShouldBeFalse();
+        refContainer.Optional.ShouldBeFalse();
 
-        IDependentItemRef refItemO = refItem.GetOptionalReference();
-        IDependentItemGroupRef refGroupO = refGroup.GetOptionalReference();
-        IDependentItemContainerRef refContainerO = refContainer.GetOptionalReference();
+        IDependentItemRef refItemO = refItem.GetOptionalReference().ShouldNotBeNull();
+        IDependentItemGroupRef refGroupO = refGroup.GetOptionalReference().ShouldNotBeNull();
+        IDependentItemContainerRef refContainerO = refContainer.GetOptionalReference().ShouldNotBeNull();
 
-        Assert.That( refItemO.FullName, Is.EqualTo( "Item" ) );
-        Assert.That( refGroupO.FullName, Is.EqualTo( "Group" ) );
-        Assert.That( refContainerO.FullName, Is.EqualTo( "Container" ) );
-        Assert.That( refItemO.Optional, Is.True );
-        Assert.That( refGroupO.Optional, Is.True );
-        Assert.That( refContainerO.Optional, Is.True );
+        refItemO.FullName.ShouldBe( "Item" );
+        refGroupO.FullName.ShouldBe( "Group" );
+        refContainerO.FullName.ShouldBe( "Container" );
+        refItemO.Optional.ShouldBeTrue();
+        refGroupO.Optional.ShouldBeTrue();
+        refContainerO.Optional.ShouldBeTrue();
 
-        IDependentItemRef refItem2 = refItemO.GetReference();
-        IDependentItemGroupRef refGroup2 = refGroupO.GetReference();
-        IDependentItemContainerRef refContainer2 = refContainerO.GetReference();
-        Assert.That( refItem2.FullName, Is.EqualTo( "Item" ) );
-        Assert.That( refGroup2.FullName, Is.EqualTo( "Group" ) );
-        Assert.That( refContainer2.FullName, Is.EqualTo( "Container" ) );
-        Assert.That( refItem2.Optional, Is.False );
-        Assert.That( refGroup2.Optional, Is.False );
-        Assert.That( refContainer2.Optional, Is.False );
+        IDependentItemRef refItem2 = refItemO.GetReference().ShouldNotBeNull();
+        IDependentItemGroupRef refGroup2 = refGroupO.GetReference().ShouldNotBeNull();
+        IDependentItemContainerRef refContainer2 = refContainerO.GetReference().ShouldNotBeNull();
+        refItem2.FullName.ShouldBe( "Item" );
+        refGroup2.FullName.ShouldBe( "Group" );
+        refContainer2.FullName.ShouldBe( "Container" );
+        refItem2.Optional.ShouldBeFalse();
+        refGroup2.Optional.ShouldBeFalse();
+        refContainer2.Optional.ShouldBeFalse();
     }
 }

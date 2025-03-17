@@ -7,8 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -58,15 +56,15 @@ class TestableContainer : TestableItem, IDependentItemContainerTyped, IDependent
                 {
                     if( ItemKind != DependentItemKind.Container && ItemKind != DependentItemKind.Unknown )
                     {
-                        throw new ArgumentException( "ContainerContains (⊐) must be used only when ItemKind = Container. Use Contains (∋) to add an element in a Group." );
+                        throw new ArgumentException( "ContainerContains (⊐) must be used only when ItemKind = Container." );
                     }
                     _children.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
                 }
                 else if( dep[0] == CycleExplainedElement.Contains ) // ∋
                 {
-                    if( ItemKind == DependentItemKind.Container || ItemKind == DependentItemKind.Unknown )
+                    if( ItemKind == DependentItemKind.Container && ItemKind != DependentItemKind.Unknown )
                     {
-                        throw new ArgumentException( "Contains (∋)  must be used only when ItemKind != Container. Use ContainerContains (⊐) to add an element in a Container." );
+                        throw new ArgumentException( "Contains (∋)  must be used only when ItemKind != Container." );
                     }
                     _children.Add( new NamedDependentItemRef( dep.Substring( 1 ).Trim() ) );
                 }

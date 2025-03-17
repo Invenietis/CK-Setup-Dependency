@@ -8,9 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CK.Core;
-using NUnit.Framework;
+using Shouldly;
 
 namespace CK.Setup.Dependency.Tests;
 
@@ -31,7 +30,7 @@ class ResultChecker
         foreach( string s in fullNames ) Check( s );
     }
 
-    public static void SimpleCheck( IDependencySorterResult r )
+    public static void SimpleCheckAndReset( IDependencySorterResult r )
     {
         if( r.SortedItems != null )
         {
@@ -41,8 +40,10 @@ class ResultChecker
             }
             if( r.SortedItems.Count > 0 )
             {
-                var ranks = r.SortedItems.Select( s => s.Rank ).Distinct().OrderBy( Util.FuncIdentity ).ToList();
-                Assert.That( ranks.Count == ranks.Last() );
+                var ranks = r.SortedItems.Select( s => s.Rank );
+                Throw.Assert( ranks.IsSortedLarge() );
+                var distinctRanks = ranks.Distinct().Order().ToList();
+                Throw.Assert( distinctRanks.Count == distinctRanks.Last() );
             }
         }
         CheckMissingInvariants( r );
@@ -53,7 +54,7 @@ class ResultChecker
         // Naive implementation. 
         if( r.ItemIssues.Count > 0 )
         {
-            Assert.That( r.HasRequiredMissing == r.ItemIssues.Any( m => m.RequiredMissingCount > 0 ) );
+            Throw.Assert( r.HasRequiredMissing == r.ItemIssues.Any( m => m.RequiredMissingCount > 0 ) );
             foreach( var m in r.ItemIssues )
             {
                 int optCount = 0;
@@ -63,38 +64,40 @@ class ResultChecker
                     if( dep[0] == '?' )
                     {
                         string strong = dep.Substring( 1 );
-                        Assert.That( m.MissingDependencies.Contains( strong ), Is.False );
+                        m.MissingDependencies.ShouldNotContain( strong );
                         ++optCount;
                     }
                     else
                     {
                         string weak = '?' + dep;
-                        Assert.That( m.MissingDependencies.Contains( weak ), Is.False );
+                        m.MissingDependencies.ShouldNotContain( weak );
                         ++reqCount;
                     }
                 }
-                Assert.That( m.RequiredMissingCount == reqCount );
-                Assert.That( m.MissingDependencies.Count() == reqCount + optCount );
+                Throw.Assert( m.RequiredMissingCount == reqCount );
+                Throw.Assert( m.MissingDependencies.Count() == reqCount + optCount );
             }
         }
     }
 
     void Check( object sortedItemOrFullName )
     {
-        ISortedItem o = sortedItemOrFullName is ISortedItem ? (ISortedItem)sortedItemOrFullName : Find( (string)sortedItemOrFullName );
+        ISortedItem o = sortedItemOrFullName is ISortedItem
+                            ? (ISortedItem)sortedItemOrFullName
+                            : Find( (string)sortedItemOrFullName );
         if( o == null ) return;
 
         // If Head, then we check the head/container order and Requires and then we stop.
         if( o.IsGroupHead )
         {
-            Assert.That( o.Container == o.GroupForHead.Container, "The container is the same for a head and its associated group." );
-            Assert.That( o.Index < o.GroupForHead.Index, $"{o.FullName} is before {o.GroupForHead.FullName} (since {o.FullName} is the head of {o.GroupForHead.FullName})." );
+            Throw.Assert( o.Container == o.GroupForHead.Container, "The container is the same for a head and its associated group." );
+            Throw.Assert( o.Index < o.GroupForHead.Index, $"{o.FullName} is before {o.GroupForHead.FullName} (since {o.FullName} is the head of {o.GroupForHead.FullName})." );
 
             // Consider the head as its container (same test as below): the head must be contained in the container of our container if it exists.               
             if( o.Item.Container != null )
             {
                 ISortedItem container = Find( o.Item.Container.FullName );
-                Assert.That( container != null && container.ItemKind == DependentItemKind.Container );
+                Throw.Assert( container != null && container.ItemKind == DependentItemKind.Container );
                 CheckItemInContainer( o, container );
             }
 
@@ -107,9 +110,9 @@ class ResultChecker
         {
             if( !o.Item.Generalization.Optional )
             {
-                Assert.That( o.Generalization != null && o.Generalization.Item == o.Item.Generalization );
+                Throw.Assert( o.Generalization != null && o.Generalization.Item == o.Item.Generalization );
                 var gen = _byName[o.Item.Generalization.FullName];
-                Assert.That( gen.Index < o.Index, $"{gen.FullName} is before {o.FullName} (since {o.FullName} specializes {gen.FullName})." );
+                Throw.Assert( gen.Index < o.Index, $"{gen.FullName} is before {o.FullName} (since {o.FullName} specializes {gen.FullName})." );
             }
         }
 
@@ -117,8 +120,10 @@ class ResultChecker
         if( o.Item.Container != null )
         {
             ISortedItem container = Find( o.Item.Container.FullName );
-            Assert.That( container != null && container.ItemKind == DependentItemKind.Container );
+            Throw.Assert( container != null && container.ItemKind == DependentItemKind.Container );
             CheckItemInContainer( o, container );
+            // ISortedItem.Requires contains the Requires and the RequiredBy from others.
+            CheckRequires( o, o.Requires.Select( r => new NamedDependentItemRef( r.Item.FullName ) ) );
         }
 
         if( o.ItemKind != DependentItemKind.Item )
@@ -133,7 +138,7 @@ class ResultChecker
         foreach( var invertReq in o.Item.RequiredBy )
         {
             var after = _byName.GetValueOrDefault( invertReq.FullName, null );
-            if( after != null ) Assert.That( o.Index < after.Index, $"{o.FullName} is before {after.FullName} (since {after.FullName} is required by {o.FullName})." );
+            if( after != null ) Throw.Assert( o.Index < after.Index, $"{o.FullName} is before {after.FullName} (since {after.FullName} is required by {o.FullName})." );
         }
     }
 
@@ -144,23 +149,23 @@ class ResultChecker
             foreach( var dep in requirements )
             {
                 var before = Find( dep.Optional ? '?' + dep.FullName : dep.FullName );
-                if( before != null ) Assert.That( before.Index < o.Index, $"{before.FullName} is before {o.FullName} (since {o.FullName} requires {before.FullName})." );
+                if( before != null ) Throw.Assert( before.Index < o.Index, $"{before.FullName} is before {o.FullName} (since {o.FullName} requires {before.FullName})." );
             }
         }
     }
 
     private static void CheckItemInContainer( ISortedItem o, ISortedItem container )
     {
-        Assert.That( container != null, "Container necessarily exists." );
-        Assert.That( container.HeadForGroup.Index < o.Index, $"{container.HeadForGroup.FullName} is before {o.FullName} (since {container.HeadForGroup.FullName} contains {o.FullName})." );
-        Assert.That( o.Index < container.Index, $"{o.FullName} is before {container.FullName} (since {container.FullName} contains {o.FullName})." );
+        Throw.Assert( container != null, "Container necessarily exists." );
+        Throw.Assert( container.HeadForGroup.Index < o.Index, $"{container.HeadForGroup.FullName} is before {o.FullName} (since {container.HeadForGroup.FullName} contains {o.FullName})." );
+        Throw.Assert( o.Index < container.Index, $"{o.FullName} is before {container.FullName} (since {container.FullName} contains {o.FullName})." );
     }
 
     ISortedItem Find( string fullNameOpt )
     {
         ISortedItem o;
         bool found = _byName.TryGetValue( fullNameOpt, out o );
-        Assert.That( found || IsDetectedMissingDependency( fullNameOpt ), "{0} not found.", fullNameOpt );
+        Throw.Assert( found || IsDetectedMissingDependency( fullNameOpt ), "{0} not found.", fullNameOpt );
         return o;
     }
 

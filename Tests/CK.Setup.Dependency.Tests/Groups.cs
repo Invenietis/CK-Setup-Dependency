@@ -5,11 +5,8 @@
 *-----------------------------------------------------------------------------*/
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
+using Shouldly;
 using static CK.Testing.MonitorTestHelper;
 
 namespace CK.Setup.Dependency.Tests;
@@ -112,19 +109,19 @@ public class Groups
 
     private static void CheckG1G2G3( IDependencySorterResult r )
     {
-        Assert.That( r.IsComplete );
+        r.IsComplete.ShouldBeTrue();
         r.AssertOrdered( "G1.Head", "G2.Head", "G3.Head", "G3", "G2", "G1" );
 
-        var s3 = r.SortedItems[3]; Assert.That( s3.FullName == "G3" );
-        var s2 = r.SortedItems[4]; Assert.That( s2.FullName == "G2" );
-        var s1 = r.SortedItems[5]; Assert.That( s1.FullName == "G1" );
-        Assert.That( s1.Children.Single() == s2 );
-        Assert.That( s2.Children.Single() == s3 );
-        Assert.That( s3.Children.Any() == false );
+        var s3 = r.SortedItems[3]; s3.FullName.ShouldBe( "G3" );
+        var s2 = r.SortedItems[4]; s2.FullName.ShouldBe( "G2" );
+        var s1 = r.SortedItems[5]; s1.FullName.ShouldBe( "G1" );
+        s1.Children.ShouldHaveSingleItem().ShouldBeSameAs( s2 );
+        s2.Children.ShouldHaveSingleItem().ShouldBeSameAs(s3);
+        s3.Children.ShouldBeEmpty();
 
-        Assert.That( s1.Groups.Any() == false );
-        Assert.That( s2.Groups.Single() == s1 );
-        Assert.That( s3.Groups.Single() == s2 );
+        s1.Groups.ShouldBeEmpty();
+        s2.Groups.ShouldHaveSingleItem().ShouldBeSameAs(s1);
+        s3.Groups.ShouldHaveSingleItem().ShouldBeSameAs(s2);
     }
 
 }
