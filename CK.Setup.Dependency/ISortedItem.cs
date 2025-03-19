@@ -1,5 +1,6 @@
 using CK.Core;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CK.Setup;
 
@@ -61,12 +62,14 @@ public interface ISortedItem
     /// Whether this is the head of a group.
     /// Use <see cref="GroupForHead"/> to get the associated group.
     /// </summary>
+    [MemberNotNullWhen( true, nameof( GroupForHead ) )]
     bool IsGroupHead { get; }
 
     /// <summary>
     /// Whether this is a group (it is a Container if <see cref="ItemKind"/> is <see cref="DependentItemKind.Container"/>.
     /// Use <see cref="HeadForGroup"/> to get the associated head.
     /// </summary>
+    [MemberNotNullWhen(true, nameof( HeadForGroup ) )]
     bool IsGroup { get; }
 
     /// <summary>
