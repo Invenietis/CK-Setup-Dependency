@@ -17,6 +17,7 @@ static class DependencyExtensions
 {
     public static IEnumerable<string> OrderedFullNames( this IDependencySorterResult @this )
     {
+        Throw.Assert( @this.SortedItems != null );
         return @this.SortedItems.Select( o => o.FullName );
     }
 
@@ -35,10 +36,10 @@ static class DependencyExtensions
 
     public static void CheckChildren( this IDependencySorterResult @this, string fullName, string childrenFullNames )
     {
-        Check( @this, Find( @this, fullName ).Children, childrenFullNames );
+        Check( @this, Find( @this, fullName )!.Children, childrenFullNames );
         // AllChildren in the current tests are always the same as Children.
         // If a new test (that should be done, btw), breaks this, this should be rewritten.
-        Check( @this, Find( @this, fullName ).GetAllChildren(), childrenFullNames );
+        Check( @this, Find( @this, fullName )!.GetAllChildren(), childrenFullNames );
     }
 
     public static void Check( this IDependencySorterResult @this, IEnumerable<ISortedItem> items, string fullNames )
@@ -51,8 +52,9 @@ static class DependencyExtensions
         }
     }
 
-    public static ISortedItem Find( this IDependencySorterResult @this, string fullName )
+    public static ISortedItem? Find( this IDependencySorterResult @this, string fullName )
     {
+        Throw.Assert( @this.SortedItems != null );
         return @this.SortedItems.FirstOrDefault( i => i.FullName == fullName );
     }
 }

@@ -1,10 +1,3 @@
-#region Proprietary License
-/*----------------------------------------------------------------------------
-* This file (CK.Setup.Dependency\Sorter\DependencySorterResult.cs) is part of CK-Database. 
-* Copyright © 2007-2014, Invenietis <http://www.invenietis.com>. All rights reserved. 
-*-----------------------------------------------------------------------------*/
-#endregion
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +13,9 @@ namespace CK.Setup;
 public sealed class DependencySorterResult<T> : IDependencySorterResult where T : class, IDependentItem
 {
     readonly IReadOnlyList<CycleExplainedElement>? _cycle;
+    readonly int _maxHeadRank;
+    readonly int _maxGroupRank;
+    readonly int _maxItemRank;
     int _itemIssueWithStructureErrorCount;
     bool _requiredMissingIsError;
 
@@ -37,9 +33,9 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         HasStartFatal = hasStartFatal;
         StartErrorCount = startErrorCount;
         HasSevereStructureError = hasSevereStructureError;
-        MaxHeadRank = maxHeadRank;
-        MaxGroupRank = maxGroupRank;
-        MaxItemRank = maxItemRank;
+        _maxHeadRank = maxHeadRank;
+        _maxGroupRank = maxGroupRank;
+        _maxItemRank = maxItemRank;
         if( result == null )
         {
             SortedItems = null;
@@ -55,9 +51,7 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         _itemIssueWithStructureErrorCount = -1;
     }
 
-    /// <summary>
-    /// Non null if a cycle has been detected.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<ICycleExplainedElement>? CycleDetected => _cycle;
 
     /// <summary>
@@ -66,51 +60,30 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
     /// </summary>
     public readonly IReadOnlyList<ISortedItem<T>>? SortedItems;
 
-    /// <summary>
-    /// Gets the maximal <see cref="ISortedItem.Rank"/> for heads of groups or containers.
-    /// </summary>
-    public readonly int MaxHeadRank;
+    /// <inheritdoc />
+    public int MaxHeadRank => _maxHeadRank;
 
-    /// <summary>
-    /// Gets the maximal <see cref="ISortedItem.Rank"/> for groups or containers.
-    /// </summary>
-    public readonly int MaxGroupRank;
+    /// <inheritdoc />
+    public int MaxGroupRank => _maxGroupRank;
 
-    /// <summary>
-    /// Gets the maximal <see cref="ISortedItem.Rank"/> for items.
-    /// </summary>
-    public readonly int MaxItemRank;
+    /// <inheritdoc />
+    public int MaxItemRank => _maxItemRank;
 
     IReadOnlyList<ISortedItem>? IDependencySorterResult.SortedItems => SortedItems;
 
-    /// <summary>
-    /// List of <see cref="DependentItemIssue"/>. Never null.
-    /// </summary>
+    /// <inheritdoc />
     public IReadOnlyList<DependentItemIssue> ItemIssues { get; }
 
-    /// <summary>
-    /// Gets the count of <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> that signaled an 
-    /// error in the monitor.
-    /// </summary>
+    /// <inheritdoc />
     public int StartErrorCount { get; }
 
-    /// <summary>
-    /// Gets whether a <see cref="IDependentItem.StartDependencySort(IActivityMonitor)"/> signaled a
-    /// fatal.
-    /// </summary>
+    /// <inheritdoc />
     public bool HasStartFatal { get; }
 
-    /// <summary>
-    /// Gets whether a structure error prevented the graph to be processed.
-    /// The <see cref="ItemIssues"/> contains the details of the error.
-    /// </summary>
+    /// <inheritdoc />
     public bool HasSevereStructureError { get; }
 
-    /// <summary>
-    /// Gets or sets whether any non optional missing requirement or generalization is a structure error (<see cref="HasStructureError"/> 
-    /// becomes true).
-    /// Defaults to true.
-    /// </summary>
+    /// <inheritdoc />
     public bool ConsiderRequiredMissingAsStructureError
     {
         get { return _requiredMissingIsError; }
@@ -124,11 +97,7 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         }
     }
 
-    /// <summary>
-    /// True if at least one non-optional requirement or generalization (a requirement that is not prefixed with '?' when expressed as a string) exists.
-    /// (If both this and <see cref="ConsiderRequiredMissingAsStructureError"/> are true then <see cref="HasStructureError"/> is also true 
-    /// since a missing dependency is flagged with <see cref="DependentItemStructureError.MissingDependency"/>.)
-    /// </summary>
+    /// <inheritdoc />
     public bool HasRequiredMissing
     {
         get
@@ -138,15 +107,10 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         }
     }
 
-    /// <summary>
-    /// True if at least one relation between an item and its container is invalid (true when <see cref="HasRequiredMissing"/> is 
-    /// true if <see cref="ConsiderRequiredMissingAsStructureError"/> is true).
-    /// </summary>
+    /// <inheritdoc />
     public bool HasStructureError => StructureErrorCount > 0;
 
-    /// <summary>
-    /// Number of items that have at least one invalid relation between itself and its container, its children, its generalization or its dependencies.
-    /// </summary>
+    /// <inheritdoc />
     public int StructureErrorCount
     {
         get
@@ -168,22 +132,14 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         }
     }
 
-    /// <summary>
-    /// True only if no cycle has been detected, no structure error (<see cref="HasStructureError"/>) exist.
-    /// and no errors have been signaled (<see cref="HasStartFatal"/> must be false and <see cref="StartErrorCount"/> 
-    /// must be 0): <see cref="SortedItems"/> can be exploited.
-    /// When IsComplete is false, <see cref="LogError"/> can be used to have a dump of the errors in a <see cref="IActivityMonitor"/>.
-    /// </summary>
+    /// <inheritdoc />
     [MemberNotNullWhen( true, nameof( SortedItems ) )]
     public bool IsComplete => CycleDetected == null && !HasStructureError && !HasStartFatal && StartErrorCount == 0;
 
     /// <inheritdoc />
     public string? CycleExplainedString => CycleDetected != null ? String.Join( " ", CycleDetected ) : null;
 
-    /// <summary>
-    /// Gets a description of the required missing dependencies. 
-    /// Null if no missing required dependency exists.
-    /// </summary>
+    /// <inheritdoc />
     public string? RequiredMissingDependenciesExplained
     {
         get
@@ -194,10 +150,7 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
         }
     }
 
-    /// <summary>
-    /// Logs <see cref="CycleExplainedString"/> and any structure errors. Does nothing if <see cref="IsComplete"/> is true.
-    /// </summary>
-    /// <param name="monitor">The monitor to use.</param>
+    /// <inheritdoc />
     public void LogError( IActivityMonitor monitor )
     {
         Throw.CheckNotNullArgument( monitor );

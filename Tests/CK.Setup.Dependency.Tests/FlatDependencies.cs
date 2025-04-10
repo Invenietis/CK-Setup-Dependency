@@ -65,7 +65,7 @@ public class FlatDependencies
         r.ItemIssues.SelectMany(m => m.MissingDependencies).ShouldHaveSingleItem().ShouldBe( "MissingDep" );
         ResultChecker.CheckMissingInvariants( r );
 
-        r.SortedItems.Count.ShouldBe(1);
+        r.SortedItems.ShouldNotBeNull().Count.ShouldBe(1);
         r.SortedItems[0].Item.ShouldBe(oneItem);
 
         r.ConsiderRequiredMissingAsStructureError = true;

@@ -144,7 +144,7 @@ public class ContainerByName
             r.HasStructureError.ShouldBeTrue();;
             r.ItemIssues[0].StructureError.ShouldBe(DependentItemStructureError.MultipleContainer);
             r.ItemIssues[0].Item.FullName.ShouldBe("O1");
-            r.ItemIssues[0].Item.Container.FullName.ShouldBe("D");
+            r.ItemIssues[0].Item.Container.ShouldNotBeNull().FullName.ShouldBe("D");
             r.ItemIssues[0].ExtraneousContainers.Single().ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
@@ -158,7 +158,7 @@ public class ContainerByName
             r.HasStructureError.ShouldBeTrue();;
             r.ItemIssues[0].StructureError.ShouldBe(DependentItemStructureError.MultipleContainer);
             r.ItemIssues[0].Item.FullName.ShouldBe("O1");
-            r.ItemIssues[0].Item.Container.FullName.ShouldBe("D");
+            r.ItemIssues[0].Item.Container.ShouldNotBeNull().FullName.ShouldBe("D");
             r.ItemIssues[0].ExtraneousContainers.Single().ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
@@ -182,7 +182,7 @@ public class ContainerByName
             r.HasStructureError.ShouldBeTrue();
             r.ItemIssues[0].StructureError.ShouldBe(DependentItemStructureError.MultipleContainer);
             r.ItemIssues[0].Item.FullName.ShouldBe("O1");
-            r.ItemIssues[0].Item.Container.FullName.ShouldBe("D");
+            r.ItemIssues[0].Item.Container.ShouldNotBeNull().FullName.ShouldBe("D");
             r.ItemIssues[0].ExtraneousContainers.ShouldHaveSingleItem().ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
@@ -194,7 +194,7 @@ public class ContainerByName
             r.HasStructureError.ShouldBeTrue();;
             r.ItemIssues[0].StructureError.ShouldBe(DependentItemStructureError.MultipleContainer);
             r.ItemIssues[0].Item.FullName.ShouldBe("O1");
-            r.ItemIssues[0].Item.Container.FullName.ShouldBe("D");
+            r.ItemIssues[0].Item.Container.ShouldNotBeNull().FullName.ShouldBe("D");
             r.ItemIssues[0].ExtraneousContainers.ShouldHaveSingleItem().ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
@@ -216,7 +216,7 @@ public class ContainerByName
             r.IsComplete.ShouldBeTrue();
             r.HasStructureError.ShouldBeFalse();;
             r.AssertOrdered( "C.Head", "O1", "C" );
-            r.SortedItems[1].Container.FullName.ShouldBe("C");
+            r.SortedItems[1].Container.ShouldNotBeNull().FullName.ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
 
@@ -226,7 +226,7 @@ public class ContainerByName
             r.IsComplete.ShouldBeTrue();
             r.HasStructureError.ShouldBeFalse();;
             r.AssertOrdered( "C.Head", "O1", "C" );
-            r.SortedItems[1].Container.FullName.ShouldBe("C");
+            r.SortedItems[1].Container.ShouldNotBeNull().FullName.ShouldBe("C");
             ResultChecker.SimpleCheckAndReset( r );
         }
 

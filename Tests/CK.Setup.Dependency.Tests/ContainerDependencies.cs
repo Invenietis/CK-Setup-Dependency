@@ -180,6 +180,7 @@ public class ContainerDependencies
         IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
         if( revertReg ) reg = reg.Reverse();
         var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.IsComplete.ShouldBeTrue();
         r.AssertOrdered( "A", "B", "C", "D", "E" );
         r.SortedItems.Single( s => s.FullName == "A" ).Requires.Select( r => r.FullName ).ShouldBeEmpty();
         r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).ShouldBe( ["A"] );
@@ -203,6 +204,7 @@ public class ContainerDependencies
         IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
         if( revertReg ) reg = reg.Reverse();
         var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.IsComplete.ShouldBeTrue();
         r.SortedItems.Where( s => !s.IsGroupHead ).Select( s => s.FullName ).Concatenate().ShouldBe( "A, B, C, D, E" );
         GetSorted( "A" ).Requires.Select( r => r.FullName ).ShouldBeEmpty();
         GetSorted( "B" ).Requires.Select( r => r.FullName ).ShouldBe( ["A"] );
