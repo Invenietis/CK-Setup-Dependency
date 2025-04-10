@@ -44,7 +44,7 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find( "ASpec" ).ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Second, register ASpec that generalizes A that references the container: the container is automatically discovered.
             container.Children.Clear();
@@ -52,24 +52,24 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Third, register the container that references A by name.
             container.Add( "⊐A" );
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             // Fourth, register A that reference the container by name.
             container.Children.Clear();
@@ -77,12 +77,12 @@ public class Generalization
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
             {
                 var r = DependencySorter.OrderItems( TestHelper.Monitor, true, ASpec, container );
                 r.AssertOrdered( "Container.Head", "A", "ASpec", "Container" );
-                r.Find( "ASpec" ).Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
+                r.Find("ASpec").ShouldNotBeNull().Container.ShouldNotBeNull().FullName.ShouldBe( "Container", "ASpec.Container has been set to A.Container." );
             }
         }
     }

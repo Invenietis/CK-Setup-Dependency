@@ -28,7 +28,7 @@ public interface IDependencySorterResult
     bool ConsiderRequiredMissingAsStructureError { get; set; }
 
     /// <summary>
-    /// List of <see cref="DependentItemIssue"/>. Never null.
+    /// Gets the list of <see cref="DependentItemIssue"/>.
     /// </summary>
     IReadOnlyList<DependentItemIssue> ItemIssues { get; }
 
@@ -93,4 +93,21 @@ public interface IDependencySorterResult
     /// Number of items that have at least one invalid relation between itself and its container, its children, its generalization or its dependencies.
     /// </summary>
     int StructureErrorCount { get; }
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for heads of groups or containers.
+    /// </summary>
+    int MaxHeadRank { get; }
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for groups or containers.
+    /// </summary>
+    int MaxGroupRank { get; }
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for items.
+    /// </summary>
+    int MaxItemRank { get; }
+
+
 }

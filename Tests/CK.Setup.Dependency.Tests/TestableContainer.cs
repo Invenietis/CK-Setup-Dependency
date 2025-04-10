@@ -21,7 +21,7 @@ class TestableContainer : TestableItem, IDependentItemContainerTyped, IDependent
     }
 
     public TestableContainer( DependentItemKind dynamicType, string fullName, params object[] content )
-        : base( fullName, null )
+        : base( fullName )
     {
         ItemKind = dynamicType;
         Add( content );
@@ -43,8 +43,7 @@ class TestableContainer : TestableItem, IDependentItemContainerTyped, IDependent
     {
         foreach( object o in content )
         {
-            TestableItem i = o as TestableItem;
-            if( i != null )
+            if( o is TestableItem i )
             {
                 _children.Add( i );
                 if( ItemKind == DependentItemKind.Container || ItemKind == DependentItemKind.Unknown ) i.Container = this;

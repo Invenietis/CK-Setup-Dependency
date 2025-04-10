@@ -206,6 +206,13 @@ public static class DependencySorter<T> where T : class, IDependentItem
         public int Rank;
 
         /// <summary>
+        /// Sets to true by <see cref="RankComputer.HandleDependency(ref int, Entry, char, Entry)"/>.
+        /// </summary>
+        public bool HasIncomingDeps;
+
+        public bool IsEntryPoint => !HasIncomingDeps;
+
+        /// <summary>
         /// Index is computed at the end of the process. 
         /// </summary>
         public int Index;
@@ -1324,6 +1331,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
                 if( relation != CycleExplainedElement.Start ) StartCycle( e, relation, oeDep );
                 return true;
             }
+            oeDep.HasIncomingDeps = true;
             if( oeDep.Rank == -1 )
             {
                 if( ComputeRank( oeDep ) )
@@ -1384,11 +1392,43 @@ public static class DependencySorter<T> where T : class, IDependentItem
             {
                 _result.Sort( _comparer );
                 int i = 0;
-                foreach( var e in _result ) e.Index = i++;
+                int maxHeadRank = 0;
+                int maxGroupRank = 0;
+                int maxItemRank = 0;
+                foreach( var e in _result )
+                {
+                    if( e.GroupIfHead != null )
+                    {
+                        if( maxHeadRank < e.Rank ) maxHeadRank = e.Rank;
+                    }
+                    else if( e.HeadIfGroupOrContainer != null )
+                    {
+                        if( maxGroupRank < e.Rank ) maxGroupRank = e.Rank;
+                    }
+                    else
+                    {
+                        if( maxItemRank < e.Rank ) maxItemRank = e.Rank;
+                    }
+                    e.Index = i++;
+                }
                 _options.HookOutput?.Invoke( _result );
-                return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError, false );
+                return new DependencySorterResult<T>( _result,
+                                                      null,
+                                                      _itemIssues,
+                                                      _startErrorCount,
+                                                      _fatalError,
+                                                      hasSevereStructureError: false,
+                                                      maxHeadRank,
+                                                      maxGroupRank,
+                                                      maxItemRank );
             }
-            return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError, HasSevereStructureError );
+            return new DependencySorterResult<T>( null,
+                                                  _cycle,
+                                                  _itemIssues,
+                                                  _startErrorCount,
+                                                  _fatalError,
+                                                  HasSevereStructureError,
+                                                  0, 0, 0 );
         }
 
         static int NormalComparer( Entry o1, Entry o2 )

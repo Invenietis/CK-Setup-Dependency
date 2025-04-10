@@ -43,10 +43,10 @@ public class ContainerDependencies
         Throw.Assert( r.IsComplete );
         r.SortedItems.Count.ShouldBe(4);
 
-        r.SortedItems[0].IsGroupHead.ShouldBeTrue( "Head of Container." );
-        r.SortedItems[1].Item.FullName.ShouldBe( "A", "Lexical order." );
-        r.SortedItems[2].Item.FullName.ShouldBe( "B", "Lexical order." );
-        r.SortedItems[3].Item.FullName.ShouldBe( "C", "Container" );
+        r.SortedItems[0].ShouldMatch( s => !s.IsEntryPoint ).IsGroupHead.ShouldBeTrue( "Head of Container." );
+        r.SortedItems[1].ShouldMatch( s => !s.IsEntryPoint ).Item.FullName.ShouldBe( "A", "Lexical order." );
+        r.SortedItems[2].ShouldMatch( s => !s.IsEntryPoint ).Item.FullName.ShouldBe( "B", "Lexical order." );
+        r.SortedItems[3].ShouldMatch( s => s.IsEntryPoint ).Item.FullName.ShouldBe( "C", "Container" );
         new ResultChecker( r ).CheckRecurse( c.FullName );
         ResultChecker.SimpleCheckAndReset( r );
         r.CheckChildren( "C", "A,B" );
@@ -89,6 +89,10 @@ public class ContainerDependencies
 
                 r.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
                 rRevert.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "A" );
+                r.SortedItems!.Take( 3 ).ShouldAllBe( s => !s.IsEntryPoint );
+                r.SortedItems!.Last().IsEntryPoint.ShouldBeTrue();
+                rRevert.SortedItems!.Take( 3 ).ShouldAllBe( s => !s.IsEntryPoint );
+                rRevert.SortedItems!.Last().IsEntryPoint.ShouldBeTrue();
             };
 
         pA.Requires.Add( pAModel );
@@ -180,6 +184,7 @@ public class ContainerDependencies
         IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
         if( revertReg ) reg = reg.Reverse();
         var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.IsComplete.ShouldBeTrue();
         r.AssertOrdered( "A", "B", "C", "D", "E" );
         r.SortedItems.Single( s => s.FullName == "A" ).Requires.Select( r => r.FullName ).ShouldBeEmpty();
         r.SortedItems.Single( s => s.FullName == "B" ).Requires.Select( r => r.FullName ).ShouldBe( ["A"] );
@@ -203,6 +208,7 @@ public class ContainerDependencies
         IEnumerable<TestableItem> reg = [pA, pB, pC, pD, pE];
         if( revertReg ) reg = reg.Reverse();
         var r = DependencySorter.OrderItems( TestHelper.Monitor, reg, discoverers: null, new DependencySorterOptions { ReverseName = reverseName } );
+        r.IsComplete.ShouldBeTrue();
         r.SortedItems.Where( s => !s.IsGroupHead ).Select( s => s.FullName ).Concatenate().ShouldBe( "A, B, C, D, E" );
         GetSorted( "A" ).Requires.Select( r => r.FullName ).ShouldBeEmpty();
         GetSorted( "B" ).Requires.Select( r => r.FullName ).ShouldBe( ["A"] );
@@ -242,6 +248,8 @@ public class ContainerDependencies
             r1.AssertOrdered( "Model.A.Head", "Model.A", "A.Head", "Model.B.Head", "A", "Model.B", "B.Head", "Objects.A.Head", "B", "Objects.A", "Objects.B.Head", "Objects.B" );
             r2.AssertOrdered( "Model.A.Head", "Model.A", "Model.B.Head", "A.Head", "Model.B", "A", "Objects.A.Head", "B.Head", "Objects.A", "B", "Objects.B.Head", "Objects.B" );
 
+            r1.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "Objects.B" );
+
             foreach( var p in all )
             {
                 p.RequiredBy.Clear();
@@ -269,6 +277,7 @@ public class ContainerDependencies
             if( r.Next( 2 ) == 0 ) pAObjects.Requires.Add( pA ); else pA.RequiredBy.Add( pAObjects );
             if( r.Next( 2 ) == 0 ) pBObjects.Requires.Add( pAObjects ); else pAObjects.RequiredBy.Add( pBObjects );
         }
+        testAndRestore();
     }
 
     [Test]
@@ -283,6 +292,7 @@ public class ContainerDependencies
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
             ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "C2" );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c0, c1, c2 );
@@ -290,6 +300,7 @@ public class ContainerDependencies
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
             ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "C2" );
         }
         {
             var r = DependencySorter.OrderItems( TestHelper.Monitor, c2, c1, c0 );
@@ -297,6 +308,7 @@ public class ContainerDependencies
             new ResultChecker( r ).CheckRecurse( "C0", "C1", "C2" );
             ResultChecker.SimpleCheckAndReset( r );
             r.CheckChildren( "C0", "A,B,C" );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "C2" );
         }
     }
 
@@ -312,6 +324,7 @@ public class ContainerDependencies
         r.CheckChildren( "C0", "A,B,C" );
         r.CheckChildren( "C1", "X" );
         r.CheckChildren( "C2", "Y" );
+        r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "C2" );
     }
 
 
@@ -447,6 +460,7 @@ public class ContainerDependencies
             Throw.Assert( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
             ResultChecker.SimpleCheckAndReset( r );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "Root" );
         }
         {
             // Ordering handles duplicates.
@@ -454,6 +468,7 @@ public class ContainerDependencies
             Throw.Assert( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
             ResultChecker.SimpleCheckAndReset( r );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "Root" );
         }
         {
             // Ordering handles duplicates.
@@ -461,6 +476,7 @@ public class ContainerDependencies
             Throw.Assert( r.ItemIssues.Any( m => m.MissingDependencies.Contains( "AMissingDependency" ) ) );
             new ResultChecker( r ).CheckRecurse( "Root" );
             ResultChecker.SimpleCheckAndReset( r );
+            r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "Root" );
         }
     }
 
@@ -484,6 +500,7 @@ public class ContainerDependencies
         r.AssertOrdered( "PackageForAB.Head", "A", "B", "PackageForAB", "PackageForABLevel1.Head", "ObjectBLevel1", "PackageForABLevel1" );
         r.CheckChildren( "PackageForAB", "A,B" );
         r.CheckChildren( "PackageForABLevel1", "ObjectBLevel1" );
+        r.SortedItems!.Single( s => s.IsEntryPoint ).FullName.ShouldBe( "PackageForABLevel1" );
     }
 
     [Test]
@@ -544,5 +561,6 @@ public class ContainerDependencies
 
         var r = DependencySorter.OrderItems( TestHelper.Monitor, options, cofely, fmBuildings, fmClient, fmFunctions );
         ResultChecker.SimpleCheckAndReset( r );
+        r.SortedItems!.Where( s => s.IsEntryPoint ).Select( s => s.FullName ).ShouldBe( ["Feedermarket-Functions.sln", "Cofely.sln"] );
     }
 }

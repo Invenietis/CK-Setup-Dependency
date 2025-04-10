@@ -18,7 +18,7 @@ public class ItemAndItemRef
 {
     class Item : IDependentItem, IDependentItemRef
     {
-        public string FullName { get; set; }
+        public required string FullName { get; set; }
 
         public bool Optional { get; set; }
 

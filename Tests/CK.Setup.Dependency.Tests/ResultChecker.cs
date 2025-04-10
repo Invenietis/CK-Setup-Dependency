@@ -19,6 +19,7 @@ class ResultChecker
 
     public ResultChecker( IDependencySorterResult r )
     {
+        r.SortedItems.ShouldNotBeNull();
         Result = r;
         _byName = r.SortedItems.ToDictionary( o => o.FullName );
     }
@@ -82,9 +83,7 @@ class ResultChecker
 
     void Check( object sortedItemOrFullName )
     {
-        ISortedItem o = sortedItemOrFullName is ISortedItem
-                            ? (ISortedItem)sortedItemOrFullName
-                            : Find( (string)sortedItemOrFullName );
+        ISortedItem? o = sortedItemOrFullName as ISortedItem ?? Find( (string)sortedItemOrFullName );
         if( o == null ) return;
 
         // If Head, then we check the head/container order and Requires and then we stop.
@@ -96,13 +95,13 @@ class ResultChecker
             // Consider the head as its container (same test as below): the head must be contained in the container of our container if it exists.               
             if( o.Item.Container != null )
             {
-                ISortedItem container = Find( o.Item.Container.FullName );
+                ISortedItem? container = Find( o.Item.Container.FullName );
                 Throw.Assert( container != null && container.ItemKind == DependentItemKind.Container );
                 CheckItemInContainer( o, container );
             }
 
             // Requirements of a group is carried by its head.
-            CheckRequires( o, o.GroupForHead.Item.Requires );
+            CheckRequires( o, o.GroupForHead.Item.Requires.ShouldNotBeNull() );
             return;
         }
         // Checking Generalization.
@@ -119,7 +118,7 @@ class ResultChecker
         // Checking Container.
         if( o.Item.Container != null )
         {
-            ISortedItem container = Find( o.Item.Container.FullName );
+            ISortedItem? container = Find( o.Item.Container.FullName );
             Throw.Assert( container != null && container.ItemKind == DependentItemKind.Container );
             CheckItemInContainer( o, container );
             // ISortedItem.Requires contains the Requires and the RequiredBy from others.
@@ -128,16 +127,16 @@ class ResultChecker
 
         if( o.ItemKind != DependentItemKind.Item )
         {
-            Check( o.HeadForGroup );
-            foreach( var item in ((IDependentItemContainer)o.Item).Children ) CheckRecurse( item.FullName );
+            Check( o.HeadForGroup.ShouldNotBeNull() );
+            foreach( var item in ((IDependentItemContainer)o.Item).Children.ShouldNotBeNull() ) CheckRecurse( item.FullName );
             // Requirements of a group is carried by its head: we don't check Requires here.
         }
-        else CheckRequires( o, o.Item.Requires );
+        else CheckRequires( o, o.Item.Requires.ShouldNotBeNull() );
 
         // RequiredBy applies to normal items and to groups (the container itself, not its head).
-        foreach( var invertReq in o.Item.RequiredBy )
+        foreach( var invertReq in o.Item.RequiredBy.ShouldNotBeNull() )
         {
-            var after = _byName.GetValueOrDefault( invertReq.FullName, null );
+            var after = _byName.GetValueOrDefault( invertReq.FullName );
             if( after != null ) Throw.Assert( o.Index < after.Index, $"{o.FullName} is before {after.FullName} (since {after.FullName} is required by {o.FullName})." );
         }
     }
@@ -157,15 +156,14 @@ class ResultChecker
     private static void CheckItemInContainer( ISortedItem o, ISortedItem container )
     {
         Throw.Assert( container != null, "Container necessarily exists." );
-        Throw.Assert( container.HeadForGroup.Index < o.Index, $"{container.HeadForGroup.FullName} is before {o.FullName} (since {container.HeadForGroup.FullName} contains {o.FullName})." );
+        Throw.Assert( container.HeadForGroup.ShouldNotBeNull().Index < o.Index, $"{container.HeadForGroup.FullName} is before {o.FullName} (since {container.HeadForGroup.FullName} contains {o.FullName})." );
         Throw.Assert( o.Index < container.Index, $"{o.FullName} is before {container.FullName} (since {container.FullName} contains {o.FullName})." );
     }
 
-    ISortedItem Find( string fullNameOpt )
+    ISortedItem? Find( string fullNameOpt )
     {
-        ISortedItem o;
-        bool found = _byName.TryGetValue( fullNameOpt, out o );
-        Throw.Assert( found || IsDetectedMissingDependency( fullNameOpt ), "{0} not found.", fullNameOpt );
+        bool found = _byName.TryGetValue( fullNameOpt, out ISortedItem? o );
+        Throw.Assert( found || IsDetectedMissingDependency( fullNameOpt ) );
         return o;
     }
 
