@@ -121,6 +121,12 @@ public interface ISortedItem
     IEnumerable<ISortedItem> Children { get; }
 
     /// <summary>
+    /// Gets whether this is an entry point of the graph: this item, group or container is
+    /// not contained in any group or container and is not required by any other item.
+    /// </summary>
+    bool IsEntryPoint { get; }
+
+    /// <summary>
     /// Creates a set with all the items recursively (as their <see cref="ISortedItem"/> wrapper) that are contained in 
     /// the <see cref="Item"/> if it is a <see cref="IDependentItemGroup"/> (that can be a <see cref="IDependentItemContainer"/>).
     /// Groups introduce a complexity here (a group contains items that belong to a container or other groups): this enumeration 

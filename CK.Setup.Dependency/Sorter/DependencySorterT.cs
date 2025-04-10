@@ -206,6 +206,13 @@ public static class DependencySorter<T> where T : class, IDependentItem
         public int Rank;
 
         /// <summary>
+        /// Sets to true by <see cref="RankComputer.HandleDependency(ref int, Entry, char, Entry)"/>.
+        /// </summary>
+        public bool HasIncomingDeps;
+
+        public bool IsEntryPoint => !HasIncomingDeps;
+
+        /// <summary>
         /// Index is computed at the end of the process. 
         /// </summary>
         public int Index;
@@ -1324,6 +1331,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
                 if( relation != CycleExplainedElement.Start ) StartCycle( e, relation, oeDep );
                 return true;
             }
+            oeDep.HasIncomingDeps = true;
             if( oeDep.Rank == -1 )
             {
                 if( ComputeRank( oeDep ) )

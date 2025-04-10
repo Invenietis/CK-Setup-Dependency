@@ -195,6 +195,7 @@ public class FlatDependencies
 
         new ResultChecker( r ).CheckRecurse( "System", "Res", "Actor", "Acto", "Act", "MCulture", "Appli", "JustLikeRes" );
         ResultChecker.SimpleCheckAndReset( r );
+        r.SortedItems!.Where( s => s.IsEntryPoint ).Select( s => s.FullName ).ShouldBe( ["JustLikeRes", "Act", "Acto", "Appli"] );
     }
 
     [Test]
@@ -303,6 +304,7 @@ public class FlatDependencies
         var r = DependencySorter.OrderItems( TestHelper.Monitor, e, g, b, h, c, d, i, f, a );
         r.AssertOrdered( "A", "B", "D", "C", "F", "H", "I", "E", "G" );
         ResultChecker.SimpleCheckAndReset( r );
+        r.SortedItems!.Where( s => s.IsEntryPoint ).Select( s => s.FullName ).ShouldBe( ["F", "G", "H", "I"], ignoreOrder: true );
 
         // Now, makes D requires E: D => A,E=>(C=>(B=>(A))) (5), where G => E=>(C=>(B=>(A))) (4)
         // G & D have no dependencies between them and actually share the same rank: the lexical order applies.
