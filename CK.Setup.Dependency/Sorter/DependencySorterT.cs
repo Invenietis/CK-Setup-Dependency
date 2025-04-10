@@ -1384,11 +1384,43 @@ public static class DependencySorter<T> where T : class, IDependentItem
             {
                 _result.Sort( _comparer );
                 int i = 0;
-                foreach( var e in _result ) e.Index = i++;
+                int maxHeadRank = 0;
+                int maxGroupRank = 0;
+                int maxItemRank = 0;
+                foreach( var e in _result )
+                {
+                    if( e.GroupIfHead != null )
+                    {
+                        if( maxHeadRank < e.Rank ) maxHeadRank = e.Rank;
+                    }
+                    else if( e.HeadIfGroupOrContainer != null )
+                    {
+                        if( maxGroupRank < e.Rank ) maxGroupRank = e.Rank;
+                    }
+                    else
+                    {
+                        if( maxItemRank < e.Rank ) maxItemRank = e.Rank;
+                    }
+                    e.Index = i++;
+                }
                 _options.HookOutput?.Invoke( _result );
-                return new DependencySorterResult<T>( _result, null, _itemIssues, _startErrorCount, _fatalError, false );
+                return new DependencySorterResult<T>( _result,
+                                                      null,
+                                                      _itemIssues,
+                                                      _startErrorCount,
+                                                      _fatalError,
+                                                      hasSevereStructureError: false,
+                                                      maxHeadRank,
+                                                      maxGroupRank,
+                                                      maxItemRank );
             }
-            return new DependencySorterResult<T>( null, _cycle, _itemIssues, _startErrorCount, _fatalError, HasSevereStructureError );
+            return new DependencySorterResult<T>( null,
+                                                  _cycle,
+                                                  _itemIssues,
+                                                  _startErrorCount,
+                                                  _fatalError,
+                                                  HasSevereStructureError,
+                                                  0, 0, 0 );
         }
 
         static int NormalComparer( Entry o1, Entry o2 )

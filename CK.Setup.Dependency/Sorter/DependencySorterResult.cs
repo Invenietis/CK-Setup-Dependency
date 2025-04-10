@@ -28,12 +28,18 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
                                      List<DependentItemIssue> itemIssues,
                                      int startErrorCount,
                                      bool hasStartFatal,
-                                     bool hasSevereStructureError )
+                                     bool hasSevereStructureError,
+                                     int maxHeadRank,
+                                     int maxGroupRank,
+                                     int maxItemRank )
     {
         Debug.Assert( (result != null) == (cycle == null && !hasStartFatal && !hasSevereStructureError) );
         HasStartFatal = hasStartFatal;
         StartErrorCount = startErrorCount;
         HasSevereStructureError = hasSevereStructureError;
+        MaxHeadRank = maxHeadRank;
+        MaxGroupRank = maxGroupRank;
+        MaxItemRank = maxItemRank;
         if( result == null )
         {
             SortedItems = null;
@@ -59,6 +65,21 @@ public sealed class DependencySorterResult<T> : IDependencySorterResult where T 
     /// or <see cref="HasStartFatal"/> or <see cref="HasSevereStructureError"/> are true.
     /// </summary>
     public readonly IReadOnlyList<ISortedItem<T>>? SortedItems;
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for heads of groups or containers.
+    /// </summary>
+    public readonly int MaxHeadRank;
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for groups or containers.
+    /// </summary>
+    public readonly int MaxGroupRank;
+
+    /// <summary>
+    /// Gets the maximal <see cref="ISortedItem.Rank"/> for items.
+    /// </summary>
+    public readonly int MaxItemRank;
 
     IReadOnlyList<ISortedItem>? IDependencySorterResult.SortedItems => SortedItems;
 
