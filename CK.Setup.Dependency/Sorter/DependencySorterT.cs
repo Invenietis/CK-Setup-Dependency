@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
+using static CK.Core.CheckedWriteStream;
 
 namespace CK.Setup;
 
@@ -101,7 +102,9 @@ public static class DependencySorter<T> where T : class, IDependentItem
         readonly Dictionary<object, object?>? _entries;
 
         // Fix the Requires. Unifies RequiredBy for deferred groups and removes transitive dependencies.
-        IReadOnlyList<Entry>? _cleanRequires;
+        // This is awful and thiw whole old lib needs a refactoring.
+        HashSet<Entry>? _cleanRequires;
+        HashSet<Entry>? _allRequires;
 
         public Entry( Dictionary<object, object?>? entries, string fullName )
         {
@@ -342,7 +345,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
 
         IEnumerable<ISortedItem> ISortedItem.Groups => GetGroups();
 
-        IEnumerable<ISortedItem> ISortedItem.Requires => _cleanRequires ??= GetRequires().ToArray();
+        IEnumerable<ISortedItem> ISortedItem.Requires => GetRequires();
 
         IEnumerable<ISortedItem> ISortedItem.DirectRequires => GetDirectRequires();
 
@@ -398,13 +401,41 @@ public static class DependencySorter<T> where T : class, IDependentItem
             return RemoveMissing( Item.Requires );
         }
 
+
         IEnumerable<Entry> GetRequires()
         {
+            if( _cleanRequires == null )
+            {
+                _cleanRequires = new HashSet<Entry>( GetCleanRequires() );
+                foreach( var e in GetCleanRequires() )
+                {
+                    _cleanRequires.ExceptWith( e.GetAllRequires() );
+                }
+            }
+            return _cleanRequires;
+        }
+
+        HashSet<Entry> GetAllRequires()
+        {
+            if( _allRequires == null )
+            {
+                _allRequires = new HashSet<Entry>();
+                foreach( var e in GetCleanRequires() )
+                {
+                    if( _allRequires.Add( e ) )
+                    {
+                        _allRequires.UnionWith( e.GetRequires() );
+                    }
+                }
+            }
+            return _allRequires;
+        }
+
+        IEnumerable<Entry> GetCleanRequires()
+        {
             IEnumerable<IDependentItemRef>? result = Requires;
-            int directRank = Rank;
             if( HeadIfGroupOrContainer != null )
             {
-                directRank = HeadIfGroupOrContainer.Rank;
                 Throw.DebugAssert( HeadIfGroupOrContainer.Requires == null
                                    || Requires == null
                                    || !Requires.Intersect( HeadIfGroupOrContainer.Requires ).Any() );
@@ -418,10 +449,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
                     result = result.Concat( HeadIfGroupOrContainer.Requires );
                 }
             }
-            var cleaned = RemoveMissing( result );
-            --directRank;
-            var final = cleaned.Where( r => r.Rank == directRank );
-            return final;
+            return RemoveMissing( result );
         }
 
         IEnumerable<Entry> RemoveMissing( IEnumerable<IDependentItemRef>? r )
@@ -470,7 +498,7 @@ public static class DependencySorter<T> where T : class, IDependentItem
 
         HashSet<ISortedItem<T>> CollectAllRequires( HashSet<ISortedItem<T>> dedup )
         {
-            foreach( var i in GetRequires() )
+            foreach( var i in GetCleanRequires() )
             {
                 if( dedup.Add( i ) )
                 {
