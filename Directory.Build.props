@@ -23,7 +23,7 @@
   <!--</BasicDefinitions>-->
   <!--<StandardProperties>-->
   <PropertyGroup>
-    <RepositoryUrl>https://github.com/Invenietis/CK-Setup-Dependency</RepositoryUrl>
+    <RepositoryUrl>https://github.com/signature-opensource/CK-Setup-Dependency</RepositoryUrl>
     <ProductName>CK</ProductName>
     <Company>Signature Code</Company>
     <Authors>Signature Code</Authors>
